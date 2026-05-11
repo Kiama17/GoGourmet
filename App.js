@@ -1,11 +1,2 @@
-import AppNavigator from "./src/navigation/AppNavigator";
+import "expo-router/entry";
 
-import { CartProvider } from "./src/context/CartContext";
-
-export default function App() {
-  return (
-    <CartProvider>
-      <AppNavigator />
-    </CartProvider>
-  );
-}
