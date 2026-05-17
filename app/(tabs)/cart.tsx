@@ -1,31 +1,21 @@
+// cart.tsx
+
+import React from "react";
+
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-const cartItems = [
-  {
-    id: "1",
-    name: "Burger",
-    price: 500,
-    quantity: 2,
-    image: require("../../assets/images/burger.png"),
-  },
-
-  {
-    id: "2",
-    name: "Pizza",
-    price: 1200,
-    quantity: 1,
-    image: require("../../assets/images/pizza.png"),
-  },
-];
+import { useCart } from "../../context/CartContext";
 
 export default function CartScreen() {
+  const { cartItems, increaseQuantity, decreaseQuantity } = useCart();
+
   const total = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -41,24 +31,40 @@ export default function CartScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={item.image} style={styles.image} />
+            <Image source={{ uri: item.image }} style={styles.image} />
 
             <View style={styles.info}>
               <Text style={styles.name}>{item.name}</Text>
 
-              <Text style={styles.price}>Ksh {item.price}</Text>
+              <Text style={styles.price}>KES {item.price}</Text>
 
-              <Text style={styles.quantity}>Quantity: {item.quantity}</Text>
+              <View style={styles.quantityContainer}>
+                <TouchableOpacity
+                  style={styles.qtyButton}
+                  onPress={() => decreaseQuantity(item.id)}
+                >
+                  <Text style={styles.qtyText}>-</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.quantity}>{item.quantity}</Text>
+
+                <TouchableOpacity
+                  style={styles.qtyButton}
+                  onPress={() => increaseQuantity(item.id)}
+                >
+                  <Text style={styles.qtyText}>+</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
       />
 
       <View style={styles.footer}>
-        <Text style={styles.total}>Total: Ksh {total}</Text>
+        <Text style={styles.total}>Total: KES {total}</Text>
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Checkout</Text>
+        <TouchableOpacity style={styles.checkoutButton}>
+          <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -68,8 +74,8 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     padding: 20,
+    backgroundColor: "#fff",
   },
 
   title: {
@@ -80,44 +86,66 @@ const styles = StyleSheet.create({
 
   card: {
     flexDirection: "row",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 15,
-    padding: 12,
     marginBottom: 15,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    padding: 10,
   },
 
   image: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 12,
   },
 
   info: {
-    marginLeft: 15,
+    flex: 1,
+    marginLeft: 10,
     justifyContent: "center",
   },
 
   name: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
   },
 
   price: {
     fontSize: 16,
-    color: "#ff6b00",
     marginTop: 5,
+  },
+
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  qtyButton: {
+    backgroundColor: "#000",
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 6,
+  },
+
+  qtyText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 
   quantity: {
-    marginTop: 5,
-    fontSize: 15,
+    marginHorizontal: 15,
+    fontSize: 16,
+    fontWeight: "600",
   },
 
   footer: {
+    marginTop: 20,
     borderTopWidth: 1,
     borderColor: "#ddd",
     paddingTop: 20,
-    marginTop: 10,
   },
 
   total: {
@@ -126,16 +154,16 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  button: {
-    backgroundColor: "#ff6b00",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
+  checkoutButton: {
+    backgroundColor: "#000",
+    padding: 15,
+    borderRadius: 10,
   },
 
-  buttonText: {
+  checkoutButtonText: {
     color: "#fff",
-    fontSize: 18,
+    textAlign: "center",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

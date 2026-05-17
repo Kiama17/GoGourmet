@@ -1,66 +1,199 @@
-import { router } from "expo-router";
+import React, { useState } from "react";
+
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  TextInput,
 } from "react-native";
 
-const foods = [
-  {
-    id: "1",
-    name: "Burger",
-    price: 500,
-    image: require("../../assets/images/burger.png"),
-  },
+import { Ionicons } from "@expo/vector-icons";
 
-  {
-    id: "2",
-    name: "Pizza",
-    price: 1200,
-    image: require("../../assets/images/pizza.png"),
-  },
+import { foods } from "../../data/foods";
 
-  {
-    id: "3",
-    name: "Fries",
-    price: 300,
-    image: require("../../assets/images/fries.png"),
-  },
+import useFavorites from "../../context/FavoritesContext";
+
+const categories = [
+  "All",
+  "Burger",
+  "Pizza",
+  "Wraps",
+  "Drinks",
+  "Fries",
 ];
 
-export default function HomeScreen() {
+export default function HomeScreen({
+  navigation,
+}: any) {
+  const [search, setSearch] =
+    useState("");
+
+  const [
+    selectedCategory,
+    setSelectedCategory,
+  ] = useState("All");
+
+  const {
+    toggleFavorite,
+    isFavorite,
+  } = useFavorites();
+
+  const filteredFoods = foods.filter(
+    (food) => {
+      const matchesSearch =
+        food.name
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          );
+
+      const matchesCategory =
+        selectedCategory === "All"
+          ? true
+          : food.category ===
+            selectedCategory;
+
+      return (
+        matchesSearch &&
+        matchesCategory
+      );
+    }
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>GoGourment</Text>
+      {/* HEADER */}
 
-      <Text style={styles.subHeader}>What would you like to eat today?</Text>
+      <Text style={styles.title}>
+        Food Delivery
+      </Text>
 
-      <TextInput placeholder="Search food..." style={styles.searchInput} />
+      {/* SEARCH */}
+
+      <TextInput
+        placeholder="Search food..."
+        value={search}
+        onChangeText={setSearch}
+        style={styles.searchInput}
+      />
+
+      {/* CATEGORIES */}
 
       <FlatList
-        data={foods}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
+        horizontal
+        showsHorizontalScrollIndicator={
+          false
+        }
+        data={categories}
+        keyExtractor={(item) => item}
+        style={styles.categoryList}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.categoryButton,
+
+              selectedCategory ===
+                item &&
+                styles.activeCategory,
+            ]}
+            onPress={() =>
+              setSelectedCategory(
+                item
+              )
+            }
+          >
+            <Text
+              style={[
+                styles.categoryText,
+
+                selectedCategory ===
+                  item &&
+                  styles.activeCategoryText,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+
+      {/* FOOD LIST */}
+
+      <FlatList
+        data={filteredFoods}
+        keyExtractor={(item) =>
+          item.id
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
             onPress={() =>
-              router.push({
-                pathname: "/food/[id]" as any,
-                params: { id: item.id },
-              })
+              navigation.navigate(
+                "FoodDetails",
+                {
+                  food: item,
+                }
+              )
             }
           >
-            <Image source={item.image} style={styles.image} />
+            {/* FAVORITE BUTTON */}
+
+            <TouchableOpacity
+              style={
+                styles.favoriteButton
+              }
+              onPress={() =>
+                toggleFavorite(item)
+              }
+            >
+              <Ionicons
+                name={
+                  isFavorite(item.id)
+                    ? "heart"
+                    : "heart-outline"
+                }
+                size={24}
+                color="red"
+              />
+            </TouchableOpacity>
+
+            {/* IMAGE */}
+
+            <Image
+              source={{
+                uri: item.image,
+              }}
+              style={styles.image}
+            />
+
+            {/* INFO */}
 
             <View style={styles.info}>
-              <Text style={styles.foodName}>{item.name}</Text>
+              <Text
+                style={styles.name}
+              >
+                {item.name}
+              </Text>
 
-              <Text style={styles.price}>Ksh {item.price}</Text>
+              <Text
+                style={
+                  styles.category
+                }
+              >
+                {item.category}
+              </Text>
+
+              <Text
+                style={styles.price}
+              >
+                KES {item.price}
+              </Text>
             </View>
           </TouchableOpacity>
         )}
@@ -76,51 +209,89 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  header: {
-    fontSize: 32,
+  title: {
+    fontSize: 30,
     fontWeight: "bold",
-    marginTop: 20,
-  },
-
-  subHeader: {
-    fontSize: 16,
-    color: "gray",
-    marginTop: 5,
     marginBottom: 20,
   },
 
   searchInput: {
-    backgroundColor: "#f2f2f2",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 20,
-    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
+  },
+
+  categoryList: {
+    marginBottom: 15,
+  },
+
+  categoryButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    backgroundColor: "#f1f1f1",
+    borderRadius: 20,
+    marginRight: 10,
+    height: 42,
+  },
+
+  activeCategory: {
+    backgroundColor: "#000",
+  },
+
+  categoryText: {
+    color: "#000",
+    fontWeight: "600",
+  },
+
+  activeCategoryText: {
+    color: "#fff",
   },
 
   card: {
+    flexDirection: "row",
     backgroundColor: "#f5f5f5",
-    borderRadius: 18,
-    marginBottom: 20,
+    borderRadius: 15,
+    marginBottom: 15,
     overflow: "hidden",
+    position: "relative",
   },
 
   image: {
-    width: "100%",
-    height: 180,
+    width: 120,
+    height: 120,
   },
 
   info: {
-    padding: 15,
+    flex: 1,
+    padding: 12,
+    justifyContent: "center",
   },
 
-  foodName: {
-    fontSize: 22,
+  name: {
+    fontSize: 18,
     fontWeight: "bold",
   },
 
+  category: {
+    marginTop: 4,
+    color: "#666",
+  },
+
   price: {
-    fontSize: 18,
-    color: "#ff6b00",
-    marginTop: 5,
+    marginTop: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  favoriteButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 5,
   },
 });

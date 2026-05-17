@@ -1,12 +1,14 @@
 import { router, useLocalSearchParams } from "expo-router";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { useCart } from "../../context/CartContext";
 
 const foods = [
   {
@@ -37,6 +39,8 @@ const foods = [
 export default function FoodDetailsScreen() {
   const { id } = useLocalSearchParams();
 
+  const { addToCart } = useCart();
+
   const food = foods.find((item) => item.id === id);
 
   if (!food) {
@@ -45,6 +49,18 @@ export default function FoodDetailsScreen() {
         <Text>Food not found</Text>
       </View>
     );
+  }
+
+  function handleAddToCart() {
+    addToCart({
+      id: food!.id,
+      name: food!.name,
+      price: food!.price,
+      image: food!.image,
+      quantity: 1,
+    });
+
+    router.push("/(tabs)/cart");
   }
 
   return (
@@ -58,10 +74,7 @@ export default function FoodDetailsScreen() {
 
         <Text style={styles.description}>{food.description}</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/(tabs)/cart")}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleAddToCart}>
           <Text style={styles.buttonText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
