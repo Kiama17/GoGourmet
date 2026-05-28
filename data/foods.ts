@@ -58,4 +58,88 @@ export const foods = [
     category: "Drinks",
     rating: 4.4,
   },
+
+  {
+    id: "6",
+    name: "Nyama Choma",
+    price: 1500,
+    image:
+      "https://images.unsplash.com/photo-1555939594-58d7cb561ad1",
+    description:
+      "Grilled beef served with kachumbari and ugali.",
+    category: "Local",
+    rating: 4.9,
+  },
+
+  {
+    id: "7",
+    name: "Pilau",
+    price: 600,
+    image:
+      "https://images.unsplash.com/photo-1603073163308-9654c3fb70b5",
+    description:
+      "Spiced rice with beef chunks and aromatic herbs.",
+    category: "Local",
+    rating: 4.7,
+  },
+
+  {
+    id: "8",
+    name: "Ugali & Fish",
+    price: 800,
+    image:
+      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7",
+    description:
+      "Soft ugali served with fried tilapia and vegetables.",
+    category: "Local",
+    rating: 4.8,
+  },
+
+  {
+    id: "9",
+    name: "Chapati & Beans",
+    price: 450,
+    image:
+      "https://images.unsplash.com/photo-1631452180519-c014fe946bc7",
+    description:
+      "Flaky layered chapati served with stewed beans.",
+    category: "Local",
+    rating: 4.5,
+  },
+
+  {
+    id: "10",
+    name: "Samosas (6 pcs)",
+    price: 300,
+    image:
+      "https://images.unsplash.com/photo-1601050690597-df0568f70950",
+    description:
+      "Crispy beef samosas served with kachumbari.",
+    category: "Local",
+    rating: 4.6,
+  },
+
+  {
+    id: "11",
+    name: "Mukimo",
+    price: 500,
+    image:
+      "https://images.unsplash.com/photo-1603073163308-9654c3fb70b5",
+    description:
+      "Mashed potatoes with pumpkin leaves, maize and beans.",
+    category: "Local",
+    rating: 4.4,
+  },
+
+  {
+    id: "12",
+    name: "Mandazi (4 pcs)",
+    price: 200,
+    image:
+      "https://images.unsplash.com/photo-1509365465985-25d11c17e812",
+    description:
+      "Soft fried dough pastries, perfect with tea.",
+    category: "Local",
+    rating: 4.3,
+  },
 ];

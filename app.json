@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -24,7 +22,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+          "apiKey": "AIzaSyCv33LQCrzbNJnVIwb_uEdVJoqfG0tiV4k"
         }
       }
     },
@@ -37,8 +35,14 @@
       "expo-router",
       "expo-build-properties",
       "expo-font",
-      "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GoGourment to use your location to set delivery address.",
+          "locationWhenInUsePermission": "Allow GoGourment to use your location to set delivery address."
+        }
+      ]
     ],
     "extra": {
       "supabaseUrl": "https://fvkqqhrwnhwstbyophnc.supabase.co",

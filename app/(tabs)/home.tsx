@@ -17,7 +17,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { useFavorites } from "../../context/FavoritesContext";
 import { foods } from "../../data/foods";
 
-const categories = ["All", "Burger", "Pizza", "Wraps", "Drinks", "Fries"];
+const categories = ["All", "Local", "Burger", "Pizza", "Wraps", "Drinks", "Fries"];
 
 type FoodCardProps = {
   item: (typeof foods)[0];
@@ -191,6 +191,23 @@ export default function HomeScreen() {
         )}
       </View>
 
+      <TouchableOpacity
+        style={styles.localBanner}
+        onPress={() => setSelectedCategory("Local")}
+        activeOpacity={0.9}
+      >
+        <View style={styles.localBannerContent}>
+          <Ionicons name="restaurant-outline" size={24} color="#fff" />
+          <View style={styles.localBannerText}>
+            <Text style={styles.localBannerTitle}>Taste of Kenya</Text>
+            <Text style={styles.localBannerSubtitle}>
+              Explore our authentic local dishes
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
+        </View>
+      </TouchableOpacity>
+
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -348,6 +365,29 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   clearButtonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
+  localBanner: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 14,
+    marginBottom: 15,
+    overflow: "hidden",
+  },
+  localBannerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    gap: 12,
+  },
+  localBannerText: { flex: 1 },
+  localBannerTitle: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+  localBannerSubtitle: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 13,
+    marginTop: 2,
+  },
   cardWrapper: { marginBottom: 15 },
   card: {
     flexDirection: "row",

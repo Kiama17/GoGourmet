@@ -1,3 +1,63 @@
+global.IS_REACT_ACT_ENVIRONMENT = true;
+global.__DEV__ = true;
+global.requestAnimationFrame = (callback) => setTimeout(callback, 0);
+global.cancelAnimationFrame = (id) => clearTimeout(id);
+global.performance = { now: jest.fn(Date.now) };
+global.nativeFabricUIManager = {};
+global.regeneratorRuntime = undefined;
+global.window = global;
+
+class MockEventEmitter {}
+Object.assign(globalThis, {
+  expo: { EventEmitter: MockEventEmitter },
+});
+
+jest.mock("expo-modules-core", () => {
+  class EventEmitter {
+    addListener = jest.fn(() => ({ remove: jest.fn() }));
+    emit = jest.fn();
+    removeAllListeners = jest.fn();
+    removeListener = jest.fn();
+  }
+  class CodedError extends Error {
+    code: string;
+    constructor(code: string, message: string) {
+      super(message);
+      this.code = code;
+    }
+  }
+  class UnavailabilityError extends Error {
+    constructor(moduleName: string, propertyName: string) {
+      super(`The method or property ${moduleName}.${propertyName} is not available on this platform`);
+    }
+  }
+  class NativeModule {}
+  class SharedObject {}
+  class SharedRef {}
+
+  const requireNativeModule = jest.fn(() => ({}));
+  const requireOptionalNativeModule = jest.fn(() => ({}));
+  const requireNativeViewManager = jest.fn(() => "View");
+  const registerWebModule = jest.fn((mod) => mod);
+  const uuid = { v4: jest.fn(() => "00000000-0000-0000-0000-000000000000"), v5: jest.fn() };
+
+  return {
+    EventEmitter,
+    CodedError,
+    UnavailabilityError,
+    NativeModule,
+    SharedObject,
+    SharedRef,
+    Platform: { OS: "web", version: "1.0", isDOMAvailable: true, isNative: false },
+    uuid,
+    requireNativeModule,
+    requireOptionalNativeModule,
+    requireNativeViewManager,
+    registerWebModule,
+    get installOnUIRuntime() { return jest.fn(); },
+  };
+});
+
 jest.mock("react-native-url-polyfill/auto", () => ({}), { virtual: true });
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
@@ -74,6 +134,14 @@ jest.mock("expo-constants", () => ({
       },
     },
   },
+}));
+
+jest.mock("expo-font", () => ({
+  loadAsync: jest.fn(() => Promise.resolve()),
+  isLoaded: jest.fn(() => true),
+  renderToImageAsync: jest.fn(() => Promise.resolve("")),
+  getOptionalNativeModule: jest.fn(),
+  requireOptionalNativeModule: jest.fn(),
 }));
 
 jest.mock("expo-image", () => ({

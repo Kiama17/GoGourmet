@@ -15,7 +15,7 @@ export type MpesaResponse = {
   responseCode?: string;
 };
 
-const SIMULATE = true;
+const SIMULATE = false;
 
 const simulateMpesaPush = async (request: MpesaRequest): Promise<MpesaResponse> => {
   await new Promise((resolve) => setTimeout(resolve, 2000));

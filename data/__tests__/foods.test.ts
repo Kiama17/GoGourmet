@@ -1,8 +1,8 @@
 import { foods } from "../foods";
 
 describe("foods data", () => {
-  it("has 5 food items", () => {
-    expect(foods).toHaveLength(5);
+  it("has 12 food items", () => {
+    expect(foods).toHaveLength(12);
   });
 
   it("each item has required fields", () => {
@@ -42,6 +42,13 @@ describe("foods data", () => {
     expect(names).toContain("Chicken Wrap");
     expect(names).toContain("Loaded Fries");
     expect(names).toContain("Milkshake");
+    expect(names).toContain("Nyama Choma");
+    expect(names).toContain("Pilau");
+    expect(names).toContain("Ugali & Fish");
+    expect(names).toContain("Chapati & Beans");
+    expect(names).toContain("Samosas (6 pcs)");
+    expect(names).toContain("Mukimo");
+    expect(names).toContain("Mandazi (4 pcs)");
   });
 
   it("has valid image URLs", () => {

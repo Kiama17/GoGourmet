@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -13,16 +13,29 @@ import {
 import { COLORS } from "../../styles/colors";
 
 import LoadingSpinner from "../../components/LoadingSpinner";
+import PaymentMethodSelector, { PaymentMethod } from "../../components/PaymentMethodSelector";
 import { useCart } from "../../context/CartContext";
 import { useOrders } from "../../context/OrdersContext";
 
 export default function CheckoutScreen() {
+  const { pickedAddress, pickedLat, pickedLng } = useLocalSearchParams<{
+    pickedAddress?: string;
+    pickedLat?: string;
+    pickedLng?: string;
+  }>();
   const { cartItems, totalPrice, loading: cartLoading } = useCart();
   const { placeOrder, loading: orderLoading } = useOrders();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(pickedAddress || "");
+  const [pickedCoords, setPickedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (pickedAddress) setAddress(pickedAddress);
+    if (pickedLat && pickedLng) setPickedCoords({ lat: parseFloat(pickedLat), lng: parseFloat(pickedLng) });
+  }, [pickedAddress, pickedLat, pickedLng]);
 
   const deliveryFee = totalPrice >= 1000 ? 0 : 150;
   const grandTotal = totalPrice + deliveryFee;
@@ -40,6 +53,14 @@ export default function CheckoutScreen() {
 
   const handlePlaceOrder = async () => {
     if (!validate()) return;
+
+    if (paymentMethod === "mpesa") {
+      router.push({
+        pathname: "/checkout/payment",
+        params: { phone: phone.trim(), amount: String(grandTotal), name: name.trim(), address: address.trim() },
+      });
+      return;
+    }
 
     try {
       await placeOrder({ address, phone });
@@ -98,15 +119,28 @@ export default function CheckoutScreen() {
         {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
 
         <Text style={styles.label}>Delivery Address</Text>
-        <TextInput
-          placeholder="Enter your delivery address"
-          value={address}
-          onChangeText={(t) => { setAddress(t); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
-          multiline
-          style={[styles.input, styles.addressInput, errors.address && styles.inputError]}
-          placeholderTextColor="#999"
-        />
+        <View style={styles.addressRow}>
+          <TextInput
+            placeholder="Enter your delivery address"
+            value={address}
+            onChangeText={(t) => { setAddress(t); if (errors.address) setErrors((p) => ({ ...p, address: "" })); }}
+            multiline
+            style={[styles.input, styles.addressInput, errors.address && styles.inputError, { flex: 1 }]}
+            placeholderTextColor="#999"
+          />
+          <TouchableOpacity
+            style={styles.mapButton}
+            onPress={() => router.push({ pathname: "/address-picker", params: { returnTo: "/checkout" } })}
+          >
+            <Ionicons name="map-outline" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
         {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
+        {pickedCoords && (
+          <Text style={styles.coordsHint}>
+            <Ionicons name="navigate" size={12} color={COLORS.success} /> Location pinned
+          </Text>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -143,6 +177,8 @@ export default function CheckoutScreen() {
         </View>
       </View>
 
+      <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} total={grandTotal} />
+
       <TouchableOpacity
         style={[styles.button, orderLoading && styles.buttonDisabled]}
         onPress={handlePlaceOrder}
@@ -153,7 +189,7 @@ export default function CheckoutScreen() {
         ) : (
           <>
             <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-            <Text style={styles.buttonText}>Place Order</Text>
+            <Text style={styles.buttonText}>{paymentMethod === "mpesa" ? "Pay with M-Pesa" : "Place Order"}</Text>
           </>
         )}
       </TouchableOpacity>
@@ -192,6 +228,20 @@ const styles = StyleSheet.create({
   },
   inputError: { borderWidth: 1.5, borderColor: COLORS.danger },
   addressInput: { height: 100, textAlignVertical: "top" },
+  addressRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  mapButton: {
+    backgroundColor: COLORS.card,
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 6,
+  },
+  coordsHint: {
+    fontSize: 12,
+    color: COLORS.success,
+    marginTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+  },
   errorText: { color: COLORS.danger, fontSize: 13, marginTop: 4 },
   summaryRow: {
     flexDirection: "row",

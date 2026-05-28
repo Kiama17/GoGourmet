@@ -13,14 +13,17 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can read own data" ON public.users;
 CREATE POLICY "Users can read own data"
   ON public.users FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update own data" ON public.users;
 CREATE POLICY "Users can update own data"
   ON public.users FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own data" ON public.users;
 CREATE POLICY "Users can insert own data"
   ON public.users FOR INSERT
   WITH CHECK (auth.uid() = id);
@@ -39,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.menu_items (
 
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Menu items are publicly readable" ON public.menu_items;
 CREATE POLICY "Menu items are publicly readable"
   ON public.menu_items FOR SELECT
   USING (true);
@@ -58,10 +62,12 @@ CREATE TABLE IF NOT EXISTS public.orders (
 
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can read own orders" ON public.orders;
 CREATE POLICY "Users can read own orders"
   ON public.orders FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own orders" ON public.orders;
 CREATE POLICY "Users can insert own orders"
   ON public.orders FOR INSERT
   WITH CHECK (auth.uid() = user_id);
@@ -80,12 +86,14 @@ CREATE TABLE IF NOT EXISTS public.payments (
 
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can read own payments" ON public.payments;
 CREATE POLICY "Users can read own payments"
   ON public.payments FOR SELECT
   USING (auth.uid() IN (
     SELECT user_id FROM public.orders WHERE id = order_id
   ));
 
+DROP POLICY IF EXISTS "Service role can manage payments" ON public.payments;
 CREATE POLICY "Service role can manage payments"
   ON public.payments FOR ALL
   USING (true)
@@ -102,6 +110,7 @@ CREATE TABLE IF NOT EXISTS public.favorites (
 
 ALTER TABLE public.favorites ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can manage own favorites" ON public.favorites;
 CREATE POLICY "Users can manage own favorites"
   ON public.favorites FOR ALL
   USING (auth.uid() = user_id)
@@ -128,5 +137,12 @@ INSERT INTO public.menu_items (id, name, price, category, description, image_url
   ('00000000-0000-0000-0000-000000000002', 'Pepperoni Pizza', 1200, 'Pizza', 'Classic pepperoni pizza with mozzarella cheese.', 'https://images.unsplash.com/photo-1548365328-9f547fb0953b', 4.7),
   ('00000000-0000-0000-0000-000000000003', 'Chicken Wrap', 650, 'Wraps', 'Grilled chicken wrap with fresh vegetables.', 'https://images.unsplash.com/photo-1608039829572-78524f79c4c7', 4.5),
   ('00000000-0000-0000-0000-000000000004', 'Loaded Fries', 500, 'Fries', 'Crispy fries topped with cheese and beef sauce.', 'https://images.unsplash.com/photo-1576107232684-1279f390859f', 4.6),
-  ('00000000-0000-0000-0000-000000000005', 'Milkshake', 400, 'Drinks', 'Vanilla milkshake with whipped cream.', 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc', 4.4)
+  ('00000000-0000-0000-0000-000000000005', 'Milkshake', 400, 'Drinks', 'Vanilla milkshake with whipped cream.', 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc', 4.4),
+  ('00000000-0000-0000-0000-000000000006', 'Nyama Choma', 1500, 'Local', 'Grilled beef served with kachumbari and ugali.', 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1', 4.9),
+  ('00000000-0000-0000-0000-000000000007', 'Pilau', 600, 'Local', 'Spiced rice with beef chunks and aromatic herbs.', 'https://images.unsplash.com/photo-1603073163308-9654c3fb70b5', 4.7),
+  ('00000000-0000-0000-0000-000000000008', 'Ugali & Fish', 800, 'Local', 'Soft ugali served with fried tilapia and vegetables.', 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7', 4.8),
+  ('00000000-0000-0000-0000-000000000009', 'Chapati & Beans', 450, 'Local', 'Flaky layered chapati served with stewed beans.', 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7', 4.5),
+  ('00000000-0000-0000-0000-000000000010', 'Samosas (6 pcs)', 300, 'Local', 'Crispy beef samosas served with kachumbari.', 'https://images.unsplash.com/photo-1601050690597-df0568f70950', 4.6),
+  ('00000000-0000-0000-0000-000000000011', 'Mukimo', 500, 'Local', 'Mashed potatoes with pumpkin leaves, maize and beans.', 'https://images.unsplash.com/photo-1603073163308-9654c3fb70b5', 4.4),
+  ('00000000-0000-0000-0000-000000000012', 'Mandazi (4 pcs)', 200, 'Local', 'Soft fried dough pastries, perfect with tea.', 'https://images.unsplash.com/photo-1509365465985-25d11c17e812', 4.3)
 ON CONFLICT (id) DO NOTHING;

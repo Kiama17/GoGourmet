@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { AddressProvider } from "../context/AddressContext";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
@@ -12,7 +13,9 @@ export default function RootLayout() {
         <FavoritesProvider>
           <CartProvider>
             <OrdersProvider>
-              <Stack screenOptions={{ animation: "slide_from_right" }} />
+              <AddressProvider>
+                <Stack screenOptions={{ animation: "slide_from_right" }} />
+              </AddressProvider>
             </OrdersProvider>
           </CartProvider>
         </FavoritesProvider>

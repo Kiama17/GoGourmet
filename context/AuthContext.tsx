@@ -7,6 +7,7 @@ type AuthContextType = {
   session: Session | null;
   logout: () => Promise<void>;
   loading: boolean;
+  updateProfile: (data: { display_name?: string; email?: string; phone?: string; address?: string }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,8 +36,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut();
   };
 
+  const updateProfile = async (data: { display_name?: string; email?: string; phone?: string; address?: string }) => {
+    if (!user) throw new Error("Not logged in");
+
+    const updates: Record<string, string> = {};
+    if (data.display_name) updates.display_name = data.display_name;
+    if (data.email) updates.email = data.email;
+    if (data.phone) updates.phone = data.phone;
+    if (data.address) updates.address = data.address;
+
+    const { error: userError } = await supabase.from("users").upsert(
+      { id: user.id, ...updates },
+      { onConflict: "id" }
+    );
+    if (userError) throw userError;
+
+    const authUpdates: Record<string, any> = {};
+    if (data.display_name) authUpdates.data = { ...authUpdates.data, display_name: data.display_name };
+    if (data.email && data.email !== user.email) authUpdates.email = data.email;
+
+    if (Object.keys(authUpdates).length > 0) {
+      try {
+        await supabase.auth.updateUser(authUpdates);
+      } catch (e) {
+        console.warn("Auth metadata update failed (non-fatal):", e);
+      }
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    setUser(sessionData?.session?.user ?? null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, logout, loading }}>
+    <AuthContext.Provider value={{ user, session, logout, loading, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

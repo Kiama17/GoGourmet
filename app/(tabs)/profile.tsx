@@ -15,8 +15,8 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { useAuth } from "../../context/AuthContext";
 
 const menuItems = [
-  { icon: "person-outline" as const, label: "Edit Profile", route: null },
-  { icon: "location-outline" as const, label: "Delivery Addresses", route: null },
+  { icon: "person-outline" as const, label: "Edit Profile", route: "/edit-profile" },
+  { icon: "location-outline" as const, label: "Delivery Addresses", route: "/addresses" },
   { icon: "card-outline" as const, label: "Payment Methods", route: null },
   { icon: "receipt-outline" as const, label: "My Orders", route: "/(tabs)/orders" },
   { icon: "heart-outline" as const, label: "Favorites", route: "/favourite" },
