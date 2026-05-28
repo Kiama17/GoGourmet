@@ -4,40 +4,45 @@
     "slug": "gogourment",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "icon": "./assets/images/logo.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ff6b00"
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
-
-    "assetBundlePatterns": ["**/*"],
-
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
-
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/splash.png",
         "backgroundColor": "#ffffff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
       }
     },
-
     "web": {
+      "favicon": "./assets/images/avatar.png",
       "bundler": "metro"
     },
-
-    "plugins": ["expo-router"],
-
     "scheme": "gogourment",
-
-    "experiments": {
-      "typedRoutes": true
+    "plugins": [
+      "expo-router",
+      "expo-build-properties",
+      "expo-font",
+      "expo-status-bar",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "supabaseUrl": "https://fvkqqhrwnhwstbyophnc.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8"
     }
   }
 }

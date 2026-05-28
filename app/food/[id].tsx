@@ -1,137 +1,153 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
+import { useRef } from "react";
 import {
-  Image,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { COLORS } from "../../styles/colors";
 
 import { useCart } from "../../context/CartContext";
-
-const foods = [
-  {
-    id: "1",
-    name: "Burger",
-    price: 500,
-    description: "A delicious beef burger with cheese and fresh vegetables.",
-    image: require("../../assets/images/burger.png"),
-  },
-
-  {
-    id: "2",
-    name: "Pizza",
-    price: 1200,
-    description: "Hot cheesy pizza loaded with toppings and extra flavor.",
-    image: require("../../assets/images/pizza.png"),
-  },
-
-  {
-    id: "3",
-    name: "Fries",
-    price: 300,
-    description: "Crispy golden fries served hot and fresh.",
-    image: require("../../assets/images/fries.png"),
-  },
-];
+import { foods } from "../../data/foods";
 
 export default function FoodDetailsScreen() {
   const { id } = useLocalSearchParams();
-
   const { addToCart } = useCart();
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const food = foods.find((item) => item.id === id);
+
+  const handleAddToCart = () => {
+    if (!food) return;
+    addToCart({
+      id: food.id,
+      name: food.name,
+      price: food.price,
+      image: food.image,
+      quantity: 1,
+    });
+    router.push("/(tabs)/cart");
+  };
 
   if (!food) {
     return (
       <View style={styles.center}>
-        <Text>Food not found</Text>
+        <Ionicons name="sad-outline" size={60} color={COLORS.subText} />
+        <Text style={styles.notFoundText}>Food not found</Text>
       </View>
     );
   }
 
-  function handleAddToCart() {
-    addToCart({
-      id: food!.id,
-      name: food!.name,
-      price: food!.price,
-      image: food!.image,
-      quantity: 1,
-    });
-
-    router.push("/(tabs)/cart");
-  }
-
   return (
-    <ScrollView style={styles.container}>
-      <Image source={food.image} style={styles.image} />
+    <ScrollView style={styles.container} bounces={false}>
+      <Image source={{ uri: food.image }} style={styles.image} />
 
-      <View style={styles.content}>
-        <Text style={styles.name}>{food.name}</Text>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+        onLayout={() => {
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 6,
+            useNativeDriver: true,
+          }).start();
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
+        }}
+      >
+        <View style={styles.headerRow}>
+          <Text style={styles.name}>{food.name}</Text>
+          <View style={styles.ratingBadge}>
+            <Ionicons name="star" size={16} color="#ffc107" />
+            <Text style={styles.rating}>{food.rating}</Text>
+          </View>
+        </View>
+        <Text style={styles.category}>{food.category}</Text>
+        <Text style={styles.price}>KES {food.price}</Text>
 
-        <Text style={styles.price}>Ksh {food.price}</Text>
+        <View style={styles.divider} />
 
+        <Text style={styles.descriptionLabel}>Description</Text>
         <Text style={styles.description}>{food.description}</Text>
 
-        <TouchableOpacity style={styles.button} onPress={handleAddToCart}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleAddToCart}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="cart-outline" size={20} color="#fff" />
           <Text style={styles.buttonText}>Add to Cart</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
+  container: { flex: 1, backgroundColor: "#fff" },
+  image: { width: "100%", height: 340 },
+  content: { padding: 24 },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-
-  image: {
-    width: "100%",
-    height: 320,
+  name: { fontSize: 30, fontWeight: "bold", flex: 1 },
+  ratingBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff6e5",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    gap: 4,
   },
-
-  content: {
-    padding: 20,
-  },
-
-  name: {
-    fontSize: 32,
-    fontWeight: "bold",
-  },
-
+  rating: { fontSize: 15, fontWeight: "bold", color: COLORS.text },
+  category: { fontSize: 15, color: COLORS.subText, marginTop: 6 },
   price: {
-    fontSize: 24,
-    color: "#ff6b00",
-    marginTop: 10,
+    fontSize: 26,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginTop: 12,
   },
-
+  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 20 },
+  descriptionLabel: { fontSize: 17, fontWeight: "600", marginBottom: 8 },
   description: {
-    fontSize: 17,
-    color: "gray",
-    marginTop: 20,
-    lineHeight: 28,
+    fontSize: 16,
+    color: COLORS.subText,
+    lineHeight: 26,
   },
-
   button: {
-    backgroundColor: "#ff6b00",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: COLORS.primary,
     padding: 18,
     borderRadius: 14,
-    alignItems: "center",
     marginTop: 40,
   },
-
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
+    gap: 12,
   },
+  notFoundText: { fontSize: 18, color: COLORS.subText },
 });
