@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useRef } from "react";
 import {
   Animated,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,7 +46,17 @@ export default function FoodDetailsScreen() {
 
   return (
     <ScrollView style={styles.container} bounces={false}>
-      <Image source={{ uri: food.image }} style={styles.image} />
+      <Animated.Image
+        source={{ uri: food.image }}
+        style={[styles.image, { opacity: fadeAnim }]}
+        onLoad={() => {
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
+        }}
+      />
 
       <Animated.View
         style={[
@@ -60,11 +70,6 @@ export default function FoodDetailsScreen() {
           Animated.spring(scaleAnim, {
             toValue: 1,
             friction: 6,
-            useNativeDriver: true,
-          }).start();
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 400,
             useNativeDriver: true,
           }).start();
         }}
@@ -118,12 +123,7 @@ const styles = StyleSheet.create({
   },
   rating: { fontSize: 15, fontWeight: "bold", color: COLORS.text },
   category: { fontSize: 15, color: COLORS.subText, marginTop: 6 },
-  price: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginTop: 12,
-  },
+  price: { fontSize: 26, fontWeight: "bold", color: COLORS.primary, marginTop: 12 },
   divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 20 },
   descriptionLabel: { fontSize: 17, fontWeight: "600", marginBottom: 8 },
   description: {

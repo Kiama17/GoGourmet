@@ -46,7 +46,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.header}>
-        <Text style={styles.appName}>GoGourment</Text>
+        <Text style={styles.appName}>GoGourmet</Text>
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Sign in to continue ordering</Text>
       </View>

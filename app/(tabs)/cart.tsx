@@ -12,6 +12,7 @@ import {
 import { COLORS } from "../../styles/colors";
 
 import EmptyState from "../../components/EmptyState";
+import ErrorMessage from "../../components/ErrorMessage";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useCart } from "../../context/CartContext";
 
@@ -97,20 +98,11 @@ export default function CartScreen() {
   );
 
   if (loading) {
-    return <LoadingSpinner fullScreen skeleton />;
+    return <LoadingSpinner fullScreen skeleton="cart" />;
   }
 
   if (error) {
-    return (
-      <View style={styles.center}>
-        <Ionicons name="alert-circle-outline" size={60} color={COLORS.danger} />
-        <Text style={styles.errorTitle}>Something went wrong</Text>
-        <Text style={styles.errorSubtitle}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={clearError}>
-          <Text style={styles.retryButtonText}>Dismiss</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <ErrorMessage message={error} onDismiss={clearError} />;
   }
 
   if (cartItems.length === 0) {

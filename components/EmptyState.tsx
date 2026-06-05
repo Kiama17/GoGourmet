@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../styles/colors";
 
@@ -23,18 +22,13 @@ export default function EmptyState({
   return (
     <View style={styles.container}>
       <View style={styles.iconWrapper}>
-        <Ionicons name={icon} size={72} color="#ddd" />
+        <Ionicons name={icon} size={64} color={COLORS.primary} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {ctaLabel && onCtaPress && (
-        <TouchableOpacity style={styles.cta} onPress={onCtaPress}>
-          <Ionicons
-            name={ctaIcon}
-            size={20}
-            color="#fff"
-            style={styles.ctaIcon}
-          />
+        <TouchableOpacity style={styles.cta} onPress={onCtaPress} activeOpacity={0.85}>
+          <Ionicons name={ctaIcon} size={20} color="#fff" style={styles.ctaIcon} />
           <Text style={styles.ctaText}>{ctaLabel}</Text>
         </TouchableOpacity>
       )}
@@ -48,29 +42,36 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
+    paddingBottom: 60,
   },
   iconWrapper: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: "#f8f8f8",
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#fff6ed",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 28,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
     color: COLORS.text,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 15,
     color: COLORS.subText,
     textAlign: "center",
     lineHeight: 22,
-    marginBottom: 28,
+    marginBottom: 32,
+    paddingHorizontal: 10,
   },
   cta: {
     flexDirection: "row",

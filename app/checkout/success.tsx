@@ -29,18 +29,11 @@ export default function SuccessScreen() {
         <Ionicons name="checkmark-circle" size={100} color={COLORS.success} />
       </Animated.View>
 
-      <Animated.View style={{ opacity: fadeAnim, alignItems: "center", width: "100%" }}>
+      <Animated.View style={{ opacity: fadeAnim, alignItems: "center" }}>
         <Text style={styles.title}>Order Placed!</Text>
         <Text style={styles.message}>
-          Your order has been received and is being prepared.
+          Your food is being prepared and will arrive soon.
         </Text>
-
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle-outline" size={20} color={COLORS.primary} />
-          <Text style={styles.infoText}>
-            You'll receive an SMS confirmation shortly. Track your order status in the Orders tab.
-          </Text>
-        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -54,7 +47,6 @@ export default function SuccessScreen() {
           style={styles.secondaryButton}
           onPress={() => router.replace("/(tabs)/home")}
         >
-          <Ionicons name="home-outline" size={20} color={COLORS.text} />
           <Text style={styles.secondaryButtonText}>Back to Home</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -70,30 +62,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 30,
   },
-  iconWrapper: { marginBottom: 24 },
-  title: { fontSize: 30, fontWeight: "bold", textAlign: "center", marginBottom: 12 },
+  iconWrapper: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 12,
+  },
   message: {
     fontSize: 17,
     textAlign: "center",
     color: COLORS.subText,
     lineHeight: 26,
-    marginBottom: 28,
-    paddingHorizontal: 10,
-  },
-  infoCard: {
-    flexDirection: "row",
-    backgroundColor: "#fff6e5",
-    padding: 16,
-    borderRadius: 14,
-    gap: 10,
-    marginBottom: 32,
-    alignItems: "flex-start",
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.text,
-    lineHeight: 20,
+    marginBottom: 40,
+    paddingHorizontal: 20,
   },
   button: {
     flexDirection: "row",
@@ -106,17 +90,22 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   secondaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 14,
+    marginTop: 16,
     paddingVertical: 16,
     borderRadius: 14,
     width: "100%",
-    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: COLORS.card,
   },
-  secondaryButtonText: { color: COLORS.text, fontSize: 16, fontWeight: "600" },
+  secondaryButtonText: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });

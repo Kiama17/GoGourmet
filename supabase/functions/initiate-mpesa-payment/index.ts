@@ -57,7 +57,7 @@ serve(async (req) => {
       PartyB: MPESA_SHORTCODE,
       PhoneNumber: phone.replace("0", "254"),
       CallBackURL: CALLBACK_URL,
-      AccountReference: accountReference || "GoGourment",
+      AccountReference: accountReference || "GoGourmet",
       TransactionDesc: transactionDesc || "Food Order Payment",
     };
 

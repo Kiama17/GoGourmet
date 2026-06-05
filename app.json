@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "GoGourment",
-    "slug": "gogourment",
-    "version": "1.0.0",
+    "name": "GoGourmet",
+    "slug": "gogourmet",
+    "version": "1.0.0-beta",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "userInterfaceStyle": "light",
@@ -11,30 +11,40 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gogourmet.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "com.gogourmet.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCv33LQCrzbNJnVIwb_uEdVJoqfG0tiV4k"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/images/avatar.png",
       "bundler": "metro"
     },
-    "scheme": "gogourment",
+    "scheme": "gogourmet",
     "plugins": [
       "expo-router",
       "expo-build-properties",
-      "expo-font",
       "expo-web-browser",
       [
         "expo-location",
@@ -42,11 +52,31 @@
           "locationAlwaysAndWhenInUsePermission": "Allow GoGourment to use your location to set delivery address.",
           "locationWhenInUsePermission": "Allow GoGourment to use your location to set delivery address."
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#ff6b00"
+        }
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar"
     ],
     "extra": {
       "supabaseUrl": "https://fvkqqhrwnhwstbyophnc.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8"
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8",
+      "router": {},
+      "eas": {
+        "projectId": "1364470b-a522-4860-b2ba-53288a2c48be"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1364470b-a522-4860-b2ba-53288a2c48be"
     }
   }
 }

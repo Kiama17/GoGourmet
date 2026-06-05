@@ -1,12 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type FoodItem = {
   id: string;
@@ -22,6 +15,8 @@ type FavoritesContextType = {
   toggleFavorite: (item: FoodItem) => Promise<void>;
   isFavorite: (id: string) => boolean;
   loading: boolean;
+  error: string | null;
+  clearError: () => void;
 };
 
 const FAVORITES_KEY = "gogourment_favorites";
@@ -35,14 +30,18 @@ export const FavoritesProvider = ({
 }) => {
   const [favorites, setFavorites] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  const clearError = () => setError(null);
+
+  // LOAD FROM STORAGE ON STARTUP
   useEffect(() => {
     const loadFavorites = async () => {
       try {
         const stored = await AsyncStorage.getItem(FAVORITES_KEY);
         if (stored) setFavorites(JSON.parse(stored));
-      } catch (error) {
-        console.error("Failed to load favorites:", error);
+      } catch (err) {
+        setError("Failed to load favorites. Please restart the app.");
       } finally {
         setLoading(false);
       }
@@ -50,59 +49,62 @@ export const FavoritesProvider = ({
     loadFavorites();
   }, []);
 
+  // SAVE TO STORAGE ON CHANGE
   useEffect(() => {
     if (loading) return;
     const saveFavorites = async () => {
       try {
         await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-      } catch (error) {
-        console.error("Failed to save favorites:", error);
+      } catch (err) {
+        setError("Failed to save favorites. Changes may not persist.");
       }
     };
     saveFavorites();
-  }, [favorites, loading]);
+  }, [favorites]);
 
-  const addFavorite = useCallback((item: FoodItem) => {
-    setFavorites((prev) => [...prev, item]);
-  }, []);
+  const addFavorite = (item: FoodItem) => {
+    try {
+      setFavorites((prev) => [...prev, item]);
+    } catch (err) {
+      setError("Failed to add to favorites.");
+    }
+  };
 
-  const removeFavorite = useCallback((id: string) => {
-    setFavorites((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+  const removeFavorite = (id: string) => {
+    try {
+      setFavorites((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      setError("Failed to remove from favorites.");
+    }
+  };
 
-  const isFavorite = useCallback(
-    (id: string) => favorites.some((item) => item.id === id),
-    [favorites],
-  );
+  const isFavorite = (id: string) => {
+    return favorites.some((item) => item.id === id);
+  };
 
-  const toggleFavorite = useCallback(
-    async (item: FoodItem) => {
+  const toggleFavorite = async (item: FoodItem) => {
+    try {
+      setError(null);
       isFavorite(item.id) ? removeFavorite(item.id) : addFavorite(item);
-    },
-    [isFavorite, addFavorite, removeFavorite],
-  );
-
-  const value = useMemo(
-    () => ({
-      favorites,
-      addFavorite,
-      removeFavorite,
-      toggleFavorite,
-      isFavorite,
-      loading,
-    }),
-    [
-      favorites,
-      addFavorite,
-      removeFavorite,
-      toggleFavorite,
-      isFavorite,
-      loading,
-    ],
-  );
+    } catch (err) {
+      setError("Failed to update favorites. Please try again.");
+      throw err;
+    }
+  };
 
   return (
-    <FavoritesContext.Provider value={value}>
+    <FavoritesContext.Provider
+      value={{
+        favorites,
+        addFavorite,
+        removeFavorite,
+        toggleFavorite,
+        isFavorite,
+        loading,
+        error,
+        clearError,
+      }}
+    >
       {children}
     </FavoritesContext.Provider>
   );

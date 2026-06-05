@@ -64,7 +64,7 @@ export default function SignupScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.header}>
-        <Text style={styles.appName}>GoGourment</Text>
+        <Text style={styles.appName}>GoGourmet</Text>
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.subtitle}>Join us and start ordering</Text>
       </View>

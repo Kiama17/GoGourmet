@@ -30,7 +30,7 @@ type CartContextType = {
   clearError: () => void;
 };
 
-const CART_STORAGE_KEY = "gogourment_cart";
+const CART_STORAGE_KEY = "gogourmet_cart";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 

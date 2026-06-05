@@ -1,4 +1,4 @@
--- GoGourment Supabase Schema Migration
+-- GoGourmet Supabase Schema Migration
 
 -- Users table (synced with Supabase Auth)
 CREATE TABLE IF NOT EXISTS public.users (

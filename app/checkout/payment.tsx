@@ -65,7 +65,7 @@ export default function PaymentScreen() {
       const result = await initiateMpesaPayment({
         phone: phone || "0712345678",
         amount: parseInt(amount || "0", 10),
-        accountReference: "GoGourment",
+        accountReference: "GoGourmet",
         transactionDesc: "Food Order Payment",
       });
 

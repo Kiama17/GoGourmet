@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { COLORS } from "../styles/colors";
 
@@ -17,6 +17,7 @@ export default function AddressPickerScreen() {
   });
   const [selectedCoords, setSelectedCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [addressText, setAddressText] = useState("");
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -24,29 +25,64 @@ export default function AddressPickerScreen() {
       if (status === "granted") {
         const loc = await Location.getCurrentPositionAsync({});
         const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
-        setRegion({ ...coords, latitudeDelta: 0.05, longitudeDelta: 0.05 });
+        const newRegion = { ...coords, latitudeDelta: 0.05, longitudeDelta: 0.05 };
+        setRegion(newRegion);
         setSelectedCoords(coords);
+        // ✅ Animate map to user's actual location
+        mapRef.current?.animateToRegion(newRegion, 600);
         reverseGeocode(coords);
       }
     })();
   }, []);
 
   const reverseGeocode = async (coords: { latitude: number; longitude: number }) => {
-    const results = await Location.reverseGeocodeAsync(coords);
-    if (results.length > 0) {
-      const r = results[0];
-      setAddressText([r.street, r.name, r.district, r.city, r.region].filter(Boolean).join(", "));
+    setGeocoding(true);
+    try {
+      const results = await Location.reverseGeocodeAsync(coords);
+      if (results.length > 0) {
+        const r = results[0];
+        // ✅ Fixed: avoid street/name duplicates, build a clean address
+        const parts = [
+          r.name !== r.street ? r.name : null, // only include name if different from street
+          r.street,
+          r.district,
+          r.city,
+          r.region,
+        ].filter(Boolean);
+        setAddressText([...new Set(parts)].join(", ")); // deduplicate
+      } else {
+        setAddressText("Address not found — try moving the pin");
+      }
+    } catch {
+      setAddressText("Could not fetch address. Check your connection.");
+    } finally {
+      setGeocoding(false);
     }
   };
 
   const handleMapPress = async (e: MapPressEvent) => {
     const coords = e.nativeEvent.coordinate;
     setSelectedCoords(coords);
+    // ✅ Animate map to center on tapped location
+    mapRef.current?.animateToRegion(
+      { ...coords, latitudeDelta: region.latitudeDelta, longitudeDelta: region.longitudeDelta },
+      300
+    );
+    await reverseGeocode(coords);
+  };
+
+  const handleDragEnd = async (coords: { latitude: number; longitude: number }) => {
+    setSelectedCoords(coords);
+    // ✅ Re-center map after drag
+    mapRef.current?.animateToRegion(
+      { ...coords, latitudeDelta: region.latitudeDelta, longitudeDelta: region.longitudeDelta },
+      300
+    );
     await reverseGeocode(coords);
   };
 
   const handleConfirm = () => {
-    if (!selectedCoords) return;
+    if (!selectedCoords || geocoding) return;
     router.navigate({
       pathname: returnTo || "/checkout",
       params: {
@@ -64,7 +100,7 @@ export default function AddressPickerScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={region}
-        onRegionChangeComplete={setRegion}
+        // ✅ Removed onRegionChangeComplete — it was fighting selectedCoords
         onPress={handleMapPress}
       >
         {selectedCoords && (
@@ -73,11 +109,7 @@ export default function AddressPickerScreen() {
             title="Delivery Address"
             description={addressText}
             draggable
-            onDragEnd={async (e) => {
-              const coords = e.nativeEvent.coordinate;
-              setSelectedCoords(coords);
-              await reverseGeocode(coords);
-            }}
+            onDragEnd={(e) => handleDragEnd(e.nativeEvent.coordinate)}
           />
         )}
       </MapView>
@@ -85,15 +117,19 @@ export default function AddressPickerScreen() {
       <View style={styles.bottomCard}>
         <View style={styles.addressRow}>
           <Ionicons name="location" size={20} color={COLORS.primary} />
-          <Text style={styles.addressText} numberOfLines={2}>
-            {addressText || "Tap on the map to set your delivery location"}
-          </Text>
+          {geocoding ? (
+            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginLeft: 8 }} />
+          ) : (
+            <Text style={styles.addressText} numberOfLines={2}>
+              {addressText || "Tap on the map to set your delivery location"}
+            </Text>
+          )}
         </View>
 
         <TouchableOpacity
-          style={[styles.confirmButton, !selectedCoords && styles.disabled]}
+          style={[styles.confirmButton, (!selectedCoords || geocoding) && styles.disabled]}
           onPress={handleConfirm}
-          disabled={!selectedCoords}
+          disabled={!selectedCoords || geocoding}
         >
           <Text style={styles.confirmText}>Confirm Location</Text>
         </TouchableOpacity>
@@ -114,16 +150,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 10,
+    elevation: 5,
   },
   addressRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
+    alignItems: "center",
     marginBottom: 16,
+    gap: 8,
   },
   addressText: {
     flex: 1,
@@ -133,14 +168,10 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: COLORS.primary,
-    padding: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
-  confirmText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "bold",
-  },
   disabled: { opacity: 0.5 },
+  confirmText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
 });

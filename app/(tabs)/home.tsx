@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { memo, useCallback, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Animated,
   FlatList,
+  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -17,23 +17,9 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { useFavorites } from "../../context/FavoritesContext";
 import { foods } from "../../data/foods";
 
-const categories = ["All", "Local", "Burger", "Pizza", "Wraps", "Drinks", "Fries"];
+const categories = ["All", "Burger", "Pizza", "Wraps", "Drinks", "Fries", "Traditional"];
 
-type FoodCardProps = {
-  item: (typeof foods)[0];
-  onPress: () => void;
-  onFavorite: () => void;
-  isFav: boolean;
-  loadingId: string | null;
-};
-
-const FoodCard = memo(function FoodCard({
-  item,
-  onPress,
-  onFavorite,
-  isFav,
-  loadingId,
-}: FoodCardProps) {
+function FoodCard({ item, onPress, onFavorite, isFav, loadingId }: any) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -77,9 +63,7 @@ const FoodCard = memo(function FoodCard({
         </TouchableOpacity>
         <Image source={{ uri: item.image }} style={styles.image} />
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
-            {item.name}
-          </Text>
+          <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
           <View style={styles.metaRow}>
             <Text style={styles.category}>{item.category}</Text>
             <View style={styles.ratingRow}>
@@ -92,15 +76,14 @@ const FoodCard = memo(function FoodCard({
       </TouchableOpacity>
     </Animated.View>
   );
-});
+}
 
 export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { toggleFavorite, isFavorite, loading: favoritesLoading } =
-    useFavorites();
+  const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites();
   const router = useRouter();
 
   const filteredFoods = foods.filter((food) => {
@@ -112,28 +95,16 @@ export default function HomeScreen() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleToggleFavorite = useCallback(
-    async (item: any) => {
-      try {
-        setLoadingId(item.id);
-        await toggleFavorite(item);
-      } catch {
-        setError("Failed to update favorite. Please try again.");
-      } finally {
-        setLoadingId(null);
-      }
-    },
-    [toggleFavorite],
-  );
-
-  const handleClearSearch = useCallback(() => {
-    setSearch("");
-    setSelectedCategory("All");
-  }, []);
-
-  const handleCategoryPress = useCallback((cat: string) => {
-    setSelectedCategory(cat);
-  }, []);
+  const handleToggleFavorite = async (item: any) => {
+    try {
+      setLoadingId(item.id);
+      await toggleFavorite(item);
+    } catch {
+      setError("Failed to update favorite. Please try again.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   if (favoritesLoading) {
     return (
@@ -171,12 +142,7 @@ export default function HomeScreen() {
       )}
 
       <View style={styles.searchContainer}>
-        <Ionicons
-          name="search-outline"
-          size={20}
-          color="#999"
-          style={styles.searchIcon}
-        />
+        <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
         <TextInput
           placeholder="Search food..."
           value={search}
@@ -191,23 +157,6 @@ export default function HomeScreen() {
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.localBanner}
-        onPress={() => setSelectedCategory("Local")}
-        activeOpacity={0.9}
-      >
-        <View style={styles.localBannerContent}>
-          <Ionicons name="restaurant-outline" size={24} color="#fff" />
-          <View style={styles.localBannerText}>
-            <Text style={styles.localBannerTitle}>Taste of Kenya</Text>
-            <Text style={styles.localBannerSubtitle}>
-              Explore our authentic local dishes
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
-        </View>
-      </TouchableOpacity>
-
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -220,7 +169,7 @@ export default function HomeScreen() {
               styles.categoryButton,
               selectedCategory === item && styles.activeCategory,
             ]}
-            onPress={() => handleCategoryPress(item)}
+            onPress={() => setSelectedCategory(item)}
           >
             <Text
               style={[
@@ -238,16 +187,9 @@ export default function HomeScreen() {
         data={filteredFoods}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
-        windowSize={5}
-        initialNumToRender={4}
-        maxToRenderPerBatch={4}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Ionicons
-              name={search ? "search-outline" : "fast-food-outline"}
-              size={60}
-              color="#ddd"
-            />
+            <Ionicons name={search ? "search-outline" : "fast-food-outline"} size={60} color="#ddd" />
             <Text style={styles.emptyTitle}>
               {search ? "No results found" : "Nothing here yet"}
             </Text>
@@ -259,16 +201,14 @@ export default function HomeScreen() {
             {search && (
               <TouchableOpacity
                 style={styles.clearButton}
-                onPress={handleClearSearch}
+                onPress={() => { setSearch(""); setSelectedCategory("All"); }}
               >
                 <Text style={styles.clearButtonText}>Clear Search</Text>
               </TouchableOpacity>
             )}
           </View>
         )}
-        contentContainerStyle={
-          filteredFoods.length === 0 ? styles.emptyList : undefined
-        }
+        contentContainerStyle={filteredFoods.length === 0 ? styles.emptyList : undefined}
         renderItem={({ item }) => (
           <FoodCard
             item={item}
@@ -308,12 +248,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     gap: 8,
   },
-  errorBannerText: {
-    flex: 1,
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "500",
-  },
+  errorBannerText: { flex: 1, color: "#fff", fontSize: 14, fontWeight: "500" },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -345,12 +280,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 60,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 8,
-    marginTop: 16,
-  },
+  emptyTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 8, marginTop: 16 },
   emptySubtitle: {
     fontSize: 15,
     color: COLORS.subText,
@@ -365,29 +295,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   clearButtonText: { color: "#fff", fontWeight: "bold", fontSize: 15 },
-  localBanner: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 14,
-    marginBottom: 15,
-    overflow: "hidden",
-  },
-  localBannerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    gap: 12,
-  },
-  localBannerText: { flex: 1 },
-  localBannerTitle: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "bold",
-  },
-  localBannerSubtitle: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 13,
-    marginTop: 2,
-  },
   cardWrapper: { marginBottom: 15 },
   card: {
     flexDirection: "row",
@@ -399,20 +306,11 @@ const styles = StyleSheet.create({
   image: { width: 120, height: 130 },
   info: { flex: 1, padding: 12, justifyContent: "center", gap: 4 },
   name: { fontSize: 18, fontWeight: "bold" },
-  metaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+  metaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   category: { color: COLORS.subText, fontSize: 13 },
   ratingRow: { flexDirection: "row", alignItems: "center", gap: 3 },
   rating: { fontSize: 13, fontWeight: "600", color: COLORS.text },
-  price: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginTop: 4,
-  },
+  price: { fontSize: 17, fontWeight: "bold", color: COLORS.primary, marginTop: 4 },
   favoriteButton: {
     position: "absolute",
     top: 10,

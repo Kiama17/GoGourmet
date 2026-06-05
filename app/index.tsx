@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import {
@@ -27,8 +28,13 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
-      router.replace("/(tabs)/home");
+    const timer = setTimeout(async () => {
+      const onboardingDone = await AsyncStorage.getItem("onboarding_complete");
+      if (onboardingDone) {
+        router.replace("/(tabs)/home");
+      } else {
+        router.replace("/onboarding");
+      }
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -45,7 +51,7 @@ export default function SplashScreen() {
           <Animated.View
             style={[styles.branding, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
           >
-            <Text style={styles.appName}>GoGourment</Text>
+            <Text style={styles.appName}>GoGourmet</Text>
             <Text style={styles.tagline}>Delicious food, delivered fast</Text>
           </Animated.View>
         </View>

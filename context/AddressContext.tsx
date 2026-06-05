@@ -9,6 +9,8 @@ export type SavedAddress = {
   address: string;
   latitude: number;
   longitude: number;
+  apartment?: string;
+  instructions?: string;
   is_default: boolean;
   created_at: string;
 };
@@ -20,6 +22,7 @@ type AddressContextType = {
   saveAddress: (addr: Omit<SavedAddress, "id" | "user_id" | "created_at">) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
   setDefault: (id: string) => Promise<void>;
+  updateAddress: (id: string, updates: Partial<Omit<SavedAddress, "id" | "user_id" | "created_at">>) => Promise<void>;
 };
 
 const AddressContext = createContext<AddressContextType | undefined>(undefined);
@@ -58,6 +61,12 @@ export const AddressProvider = ({ children }: { children: ReactNode }) => {
     await fetchAddresses();
   };
 
+  const updateAddress = async (id: string, updates: Partial<Omit<SavedAddress, "id" | "user_id" | "created_at">>) => {
+    const { error } = await supabase.from("addresses").update(updates).eq("id", id);
+    if (error) throw error;
+    setAddresses((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+  };
+
   const deleteAddress = async (id: string) => {
     const { error } = await supabase.from("addresses").delete().eq("id", id);
     if (error) throw error;
@@ -72,7 +81,7 @@ export const AddressProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AddressContext.Provider value={{ addresses, loading, fetchAddresses, saveAddress, deleteAddress, setDefault }}>
+    <AddressContext.Provider value={{ addresses, loading, fetchAddresses, saveAddress, deleteAddress, setDefault, updateAddress }}>
       {children}
     </AddressContext.Provider>
   );
