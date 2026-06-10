@@ -170,6 +170,58 @@ export function FoodDetailSkeleton() {
   );
 }
 
+export function FavouritesSkeleton() {
+  return (
+    <View style={s.container}>
+      {[1, 2, 3].map((i) => (
+        <View key={i} style={s.foodCard}>
+          <SkeletonBox width={120} height={130} borderRadius={0} />
+          <View style={s.cardInfo}>
+            <SkeletonBox width="75%" height={18} />
+            <SkeletonBox width="50%" height={13} />
+            <SkeletonBox width="35%" height={17} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export function AddressesSkeleton() {
+  return (
+    <View style={s.container}>
+      {[1, 2, 3].map((i) => (
+        <View key={i} style={s.addressCard}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Skeleton.Circle size={32} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <SkeletonBox width="30%" height={15} />
+              <SkeletonBox width="70%" height={13} />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export function AdminOrdersSkeleton() {
+  return (
+    <View style={s.container}>
+      {[1, 2, 3].map((i) => (
+        <View key={i} style={s.orderCard}>
+          <View style={s.orderHeader}>
+            <SkeletonBox width="35%" height={15} />
+            <SkeletonBox width={70} height={22} borderRadius={11} />
+          </View>
+          <SkeletonBox width="40%" height={13} />
+          <SkeletonBox width="25%" height={13} style={{ marginTop: 4 }} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const s = StyleSheet.create({
   container: { paddingTop: 10 },
   foodCard: {
@@ -228,5 +280,11 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  addressCard: {
+    backgroundColor: "#f5f5f5",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
   },
 });

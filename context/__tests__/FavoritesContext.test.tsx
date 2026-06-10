@@ -2,6 +2,10 @@ import { act, renderHook } from "@testing-library/react-native";
 import React, { ReactNode } from "react";
 import { FavoritesProvider, useFavorites } from "../FavoritesContext";
 
+jest.mock("../AuthContext", () => ({
+  useAuth: () => ({ user: null }),
+}));
+
 const wrapper = ({ children }: { children: ReactNode }) => (
   <FavoritesProvider>{children}</FavoritesProvider>
 );
@@ -87,6 +91,6 @@ describe("FavoritesContext", () => {
       result.current.addFavorite(sampleItem);
       result.current.addFavorite(sampleItem);
     });
-    expect(result.current.favorites).toHaveLength(2);
+    expect(result.current.favorites).toHaveLength(1);
   });
 });

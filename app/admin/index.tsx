@@ -76,22 +76,22 @@ export default function AdminDashboardScreen() {
 
       <View style={styles.quickActions}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/analytics")}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/analytics")} accessibilityLabel="View Analytics" accessibilityRole="button">
           <Ionicons name="stats-chart-outline" size={24} color="#28a745" />
           <Text style={styles.actionText}>Analytics</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/orders")}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/orders")} accessibilityLabel="Manage Orders" accessibilityRole="button">
           <Ionicons name="receipt-outline" size={24} color={COLORS.primary} />
           <Text style={styles.actionText}>Manage Orders</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/menu")}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/menu")} accessibilityLabel="Manage Menu" accessibilityRole="button">
           <Ionicons name="restaurant-outline" size={24} color={COLORS.primary} />
           <Text style={styles.actionText}>Manage Menu</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/users")}>
+        <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/admin/users")} accessibilityLabel="View Users" accessibilityRole="button">
           <Ionicons name="people-outline" size={24} color={COLORS.primary} />
           <Text style={styles.actionText}>View Users</Text>
           <Ionicons name="chevron-forward" size={20} color="#999" />

@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Image } from "expo-image";
 import {
   Animated,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TextInput,
@@ -15,9 +15,9 @@ import { COLORS } from "../../styles/colors";
 
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useFavorites } from "../../context/FavoritesContext";
-import { foods } from "../../data/foods";
+import { getMenuItems, MenuItem } from "../../services/menu";
 
-const categories = ["All", "Burger", "Pizza", "Wraps", "Drinks", "Fries", "Traditional"];
+const categories = ["All", "Burger", "Pizza", "Wraps", "Drinks", "Fries", "Local"];
 
 function FoodCard({ item, onPress, onFavorite, isFav, loadingId }: any) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -45,11 +45,15 @@ function FoodCard({ item, onPress, onFavorite, isFav, loadingId }: any) {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.95}
+        accessibilityLabel={`View ${item.name}`}
+        accessibilityRole="button"
       >
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={onFavorite}
           disabled={loadingId === item.id}
+          accessibilityLabel={isFav ? `Remove ${item.name} from favorites` : `Add ${item.name} to favorites`}
+          accessibilityRole="button"
         >
           {loadingId === item.id ? (
             <LoadingSpinner size="small" color="red" />
@@ -79,12 +83,21 @@ function FoodCard({ item, onPress, onFavorite, isFav, loadingId }: any) {
 }
 
 export default function HomeScreen() {
+  const [foods, setFoods] = useState<MenuItem[]>([]);
+  const [menuLoading, setMenuLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites();
   const router = useRouter();
+
+  useEffect(() => {
+    getMenuItems().then((items) => {
+      setFoods(items);
+      setMenuLoading(false);
+    });
+  }, []);
 
   const filteredFoods = foods.filter((food) => {
     const matchesSearch = food.name
@@ -106,7 +119,7 @@ export default function HomeScreen() {
     }
   };
 
-  if (favoritesLoading) {
+  if (favoritesLoading || menuLoading) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Food Delivery</Text>
@@ -125,6 +138,8 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={styles.favIcon}
           onPress={() => router.push({ pathname: "/favourite" } as any)}
+          accessibilityLabel="View favorites"
+          accessibilityRole="button"
         >
           <Ionicons name="heart" size={26} color={COLORS.primary} />
         </TouchableOpacity>
@@ -134,6 +149,8 @@ export default function HomeScreen() {
         <TouchableOpacity
           style={styles.errorBanner}
           onPress={() => setError(null)}
+          accessibilityLabel="Dismiss error"
+          accessibilityRole="button"
         >
           <Ionicons name="alert-circle-outline" size={18} color="#fff" />
           <Text style={styles.errorBannerText}>{error}</Text>
@@ -151,7 +168,7 @@ export default function HomeScreen() {
           placeholderTextColor="#999"
         />
         {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch("")}>
+          <TouchableOpacity onPress={() => setSearch("")} accessibilityLabel="Clear search" accessibilityRole="button">
             <Ionicons name="close-circle" size={20} color="#999" />
           </TouchableOpacity>
         )}
@@ -170,6 +187,8 @@ export default function HomeScreen() {
               selectedCategory === item && styles.activeCategory,
             ]}
             onPress={() => setSelectedCategory(item)}
+            accessibilityLabel={`Filter by ${item}`}
+            accessibilityRole="button"
           >
             <Text
               style={[
@@ -202,6 +221,8 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={styles.clearButton}
                 onPress={() => { setSearch(""); setSelectedCategory("All"); }}
+                accessibilityLabel="Clear search and filters"
+                accessibilityRole="button"
               >
                 <Text style={styles.clearButtonText}>Clear Search</Text>
               </TouchableOpacity>

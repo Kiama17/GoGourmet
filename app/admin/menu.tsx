@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
+import { Image } from "expo-image";
 import {
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -27,12 +27,16 @@ import {
 } from "../../services/admin";
 
 const categories = ["Burger", "Pizza", "Wraps", "Fries", "Drinks", "Local"];
+const PAGE_SIZE = 10;
 
 export default function AdminMenuScreen() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -42,28 +46,43 @@ export default function AdminMenuScreen() {
     description: "",
     image_url: "",
     rating: "",
+    stock_quantity: "",
   });
 
   useEffect(() => {
-    loadItems();
+    loadItems(1);
   }, []);
 
-  const loadItems = async () => {
+  const loadItems = async (pageNum = 1) => {
     try {
-      setLoading(true);
+      if (pageNum === 1) setLoading(true);
       setError("");
-      const data = await getAllMenuItems();
-      setItems(data);
+      const data = await getAllMenuItems(pageNum, PAGE_SIZE);
+      if (pageNum === 1) {
+        setItems(data);
+      } else {
+        setItems((prev) => [...prev, ...data]);
+      }
+      setHasMore(data.length === PAGE_SIZE);
     } catch {
       setError("Failed to load menu items");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadItems(nextPage);
   };
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ name: "", price: "", category: "Local", description: "", image_url: "", rating: "" });
+    setForm({ name: "", price: "", category: "Local", description: "", image_url: "", rating: "", stock_quantity: "" });
     setModalVisible(true);
   };
 
@@ -76,6 +95,7 @@ export default function AdminMenuScreen() {
       description: item.description || "",
       image_url: item.image_url || "",
       rating: String(item.rating || ""),
+      stock_quantity: item.stock_quantity != null ? String(item.stock_quantity) : "",
     });
     setModalVisible(true);
   };
@@ -99,6 +119,7 @@ export default function AdminMenuScreen() {
         description: form.description.trim(),
         image_url: form.image_url.trim(),
         rating: form.rating ? parseFloat(form.rating) : undefined,
+        stock_quantity: form.stock_quantity ? parseInt(form.stock_quantity, 10) : undefined,
       };
       if (editingId) {
         await updateMenuItem(editingId, payload);
@@ -146,6 +167,19 @@ export default function AdminMenuScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <EmptyState icon="restaurant-outline" title="No menu items" subtitle="Create your first menu item" />
+        }
+        ListFooterComponent={
+          hasMore ? (
+            <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
+              {loadingMore ? (
+                <LoadingSpinner size="small" />
+              ) : (
+                <Text style={styles.loadMoreText}>Load More</Text>
+              )}
+            </TouchableOpacity>
+          ) : items.length > 0 ? (
+            <Text style={styles.endText}>All items loaded</Text>
+          ) : null
         }
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -250,6 +284,16 @@ export default function AdminMenuScreen() {
               onChangeText={(t) => setForm((p) => ({ ...p, rating: t }))}
               placeholder="e.g. 4.5"
               keyboardType="decimal-pad"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Stock Quantity</Text>
+            <TextInput
+              style={styles.input}
+              value={form.stock_quantity}
+              onChangeText={(t) => setForm((p) => ({ ...p, stock_quantity: t }))}
+              placeholder="e.g. 50"
+              keyboardType="number-pad"
               placeholderTextColor="#999"
             />
 
@@ -358,4 +402,13 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   saveBtnText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
+  loadMore: {
+    alignItems: "center",
+    paddingVertical: 16,
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  loadMoreText: { color: COLORS.primary, fontSize: 15, fontWeight: "600" },
+  endText: { textAlign: "center", color: COLORS.subText, fontSize: 13, paddingVertical: 16 },
 });

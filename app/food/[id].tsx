@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Image,
@@ -13,15 +13,24 @@ import {
 import { COLORS } from "../../styles/colors";
 
 import { useCart } from "../../context/CartContext";
-import { foods } from "../../data/foods";
+import { getMenuItemById, MenuItem } from "../../services/menu";
 
 export default function FoodDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { addToCart } = useCart();
+  const [food, setFood] = useState<MenuItem | null>(null);
+  const [loading, setLoading] = useState(true);
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const food = foods.find((item) => item.id === id);
+  useEffect(() => {
+    if (id) {
+      getMenuItemById(id as string).then((item) => {
+        setFood(item);
+        setLoading(false);
+      });
+    }
+  }, [id]);
 
   const handleAddToCart = () => {
     if (!food) return;

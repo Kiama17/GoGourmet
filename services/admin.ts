@@ -35,11 +35,14 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
   };
 };
 
-export const getAllOrders = async () => {
+export const getAllOrders = async (page = 1, pageSize = 50) => {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
   const { data, error } = await supabase
     .from("orders")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (error) throw error;
   return data || [];
 };
@@ -49,11 +52,14 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   if (error) throw error;
 };
 
-export const getAllMenuItems = async () => {
+export const getAllMenuItems = async (page = 1, pageSize = 50) => {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
   const { data, error } = await supabase
     .from("menu_items")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (error) throw error;
   return data || [];
 };
@@ -65,6 +71,7 @@ export const createMenuItem = async (item: {
   description?: string;
   image_url?: string;
   rating?: number;
+  stock_quantity?: number;
 }) => {
   const { error } = await supabase.from("menu_items").insert(item);
   if (error) throw error;
@@ -79,6 +86,7 @@ export const updateMenuItem = async (
     description: string;
     image_url: string;
     rating: number;
+    stock_quantity: number;
   }>,
 ) => {
   const { error } = await supabase.from("menu_items").update(item).eq("id", id);

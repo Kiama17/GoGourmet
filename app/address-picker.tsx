@@ -7,7 +7,8 @@ import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from "react-native-ma
 import { COLORS } from "../styles/colors";
 
 export default function AddressPickerScreen() {
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const params = useLocalSearchParams<Record<string, string>>();
+  const returnTo = params.returnTo;
   const mapRef = useRef<MapView>(null);
   const [region, setRegion] = useState({
     latitude: -1.2921,
@@ -83,12 +84,17 @@ export default function AddressPickerScreen() {
 
   const handleConfirm = () => {
     if (!selectedCoords || geocoding) return;
+    const passThrough: Record<string, string> = {};
+    for (const key of Object.keys(params)) {
+      if (key.startsWith("return")) passThrough[key] = params[key];
+    }
     router.navigate({
       pathname: returnTo || "/checkout",
       params: {
         pickedAddress: addressText,
         pickedLat: selectedCoords.latitude,
         pickedLng: selectedCoords.longitude,
+        ...passThrough,
       },
     });
   };

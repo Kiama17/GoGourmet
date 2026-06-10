@@ -6,8 +6,11 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import { useAuth } from "./AuthContext";
+import { analytics } from "../services/analytics";
 
 type CartItem = {
   id: string;
@@ -38,6 +41,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevUserRef = useRef<any>(undefined);
+  const { user } = useAuth();
+
+  // CLEAR CART ON LOGOUT
+  useEffect(() => {
+    if (prevUserRef.current !== undefined && !user) {
+      setCartItems([]);
+      AsyncStorage.removeItem(CART_STORAGE_KEY);
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   // LOAD CART FROM STORAGE ON STARTUP
   useEffect(() => {
@@ -81,6 +95,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
         return [...prev, { ...food, quantity: 1 }];
       });
+      analytics.track("item_added_to_cart", { item_id: food.id, name: food.name, quantity: 1 });
     } catch (err) {
       setError("Failed to add item to cart.");
     }
@@ -100,6 +115,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const decreaseQuantity = (id: string) => {
     try {
+      const currentItem = cartItems.find((item) => item.id === id);
+      if (currentItem && currentItem.quantity === 1) {
+        analytics.track("item_removed_from_cart", { item_id: id });
+      }
       setCartItems((prev) =>
         prev
           .map((item) =>

@@ -1,12 +1,12 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { COLORS } from "../styles/colors";
-import { CartSkeleton, FoodDetailSkeleton, HomeSkeleton, OrdersSkeleton } from "./Skeleton";
+import { AddressesSkeleton, AdminOrdersSkeleton, CartSkeleton, FavouritesSkeleton, FoodDetailSkeleton, HomeSkeleton, OrdersSkeleton } from "./Skeleton";
 
 type LoadingSpinnerProps = {
   size?: "small" | "large";
   color?: string;
   fullScreen?: boolean;
-  skeleton?: boolean | "home" | "orders" | "cart" | "food-detail";
+  skeleton?: boolean | "home" | "orders" | "cart" | "food-detail" | "favourites" | "addresses" | "admin-orders";
 };
 
 export default function LoadingSpinner({
@@ -22,6 +22,9 @@ export default function LoadingSpinner({
       orders: OrdersSkeleton,
       cart: CartSkeleton,
       "food-detail": FoodDetailSkeleton,
+      favourites: FavouritesSkeleton,
+      addresses: AddressesSkeleton,
+      "admin-orders": AdminOrdersSkeleton,
     }[type];
 
     const content = <SkeletonComponent />;

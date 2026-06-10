@@ -1,9 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { COLORS } from "../styles/colors";
-import { foods } from "../data/foods";
 
-const previewFoods = foods.slice(0, 3);
+const previewFoods = [
+  { id: "1", name: "Burger Deluxe", price: 850, category: "Burger" },
+  { id: "2", name: "Pepperoni Pizza", price: 1200, category: "Pizza" },
+  { id: "3", name: "Chicken Wrap", price: 650, category: "Wraps" },
+];
 
 function PhoneFrame({ children, label }: { children: React.ReactNode; label: string }) {
   return (

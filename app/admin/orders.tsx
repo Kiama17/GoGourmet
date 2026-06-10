@@ -16,27 +16,45 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { getAllOrders, updateOrderStatus } from "../../services/admin";
 
 const statuses = ["Pending", "Preparing", "Delivered", "Cancelled"];
+const PAGE_SIZE = 10;
 
 export default function AdminOrdersScreen() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    loadOrders();
+    loadOrders(1);
   }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = async (pageNum: number) => {
     try {
-      setLoading(true);
+      if (pageNum === 1) setLoading(true);
       setError("");
-      const data = await getAllOrders();
-      setOrders(data);
+      const data = await getAllOrders(pageNum, PAGE_SIZE);
+      if (pageNum === 1) {
+        setOrders(data);
+      } else {
+        setOrders((prev) => [...prev, ...data]);
+      }
+      setHasMore(data.length === PAGE_SIZE);
     } catch {
       setError("Failed to load orders");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadOrders(nextPage);
   };
 
   const handleStatusChange = useCallback((orderId: string, currentStatus: string) => {
@@ -61,10 +79,10 @@ export default function AdminOrdersScreen() {
     ]);
   }, []);
 
-  if (loading) return <LoadingSpinner fullScreen />;
+  if (loading) return <LoadingSpinner fullScreen skeleton="admin-orders" />;
 
   if (error) {
-    return <ErrorMessage title="Orders Error" message={error} onRetry={loadOrders} />;
+    return <ErrorMessage title="Orders Error" message={error} onRetry={() => loadOrders(1)} />;
   }
 
   if (orders.length === 0) {
@@ -81,6 +99,19 @@ export default function AdminOrdersScreen() {
         data={orders}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          hasMore ? (
+            <TouchableOpacity style={styles.loadMore} onPress={loadMore} disabled={loadingMore}>
+              {loadingMore ? (
+                <LoadingSpinner size="small" />
+              ) : (
+                <Text style={styles.loadMoreText}>Load More</Text>
+              )}
+            </TouchableOpacity>
+          ) : orders.length > 0 ? (
+            <Text style={styles.endText}>All orders loaded</Text>
+          ) : null
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -162,4 +193,13 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 16, fontWeight: "600" },
   total: { fontSize: 20, fontWeight: "bold", color: COLORS.primary },
   address: { fontSize: 13, color: COLORS.subText, marginTop: 8 },
+  loadMore: {
+    alignItems: "center",
+    paddingVertical: 16,
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  loadMoreText: { color: COLORS.primary, fontSize: 15, fontWeight: "600" },
+  endText: { textAlign: "center", color: COLORS.subText, fontSize: 13, paddingVertical: 16 },
 });

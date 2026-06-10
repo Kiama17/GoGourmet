@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { analytics } from "../services/analytics";
 
 type FoodItem = {
   id: string;
@@ -31,10 +33,20 @@ export const FavoritesProvider = ({
   const [favorites, setFavorites] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevUserRef = useRef<any>(undefined);
+  const { user } = useAuth();
 
   const clearError = () => setError(null);
 
-  // LOAD FROM STORAGE ON STARTUP
+  // CLEAR FAVORITES ON LOGOUT
+  useEffect(() => {
+    if (prevUserRef.current !== undefined && !user) {
+      setFavorites([]);
+      AsyncStorage.removeItem(FAVORITES_KEY);
+    }
+    prevUserRef.current = user;
+  }, [user]);
+
   useEffect(() => {
     const loadFavorites = async () => {
       try {
@@ -64,7 +76,10 @@ export const FavoritesProvider = ({
 
   const addFavorite = (item: FoodItem) => {
     try {
-      setFavorites((prev) => [...prev, item]);
+      setFavorites((prev) => {
+        if (prev.some((f) => f.id === item.id)) return prev;
+        return [...prev, item];
+      });
     } catch (err) {
       setError("Failed to add to favorites.");
     }
@@ -85,7 +100,13 @@ export const FavoritesProvider = ({
   const toggleFavorite = async (item: FoodItem) => {
     try {
       setError(null);
-      isFavorite(item.id) ? removeFavorite(item.id) : addFavorite(item);
+      if (isFavorite(item.id)) {
+        removeFavorite(item.id);
+        analytics.track("item_unfavorited", { item_id: item.id });
+      } else {
+        addFavorite(item);
+        analytics.track("item_favorited", { item_id: item.id });
+      }
     } catch (err) {
       setError("Failed to update favorites. Please try again.");
       throw err;

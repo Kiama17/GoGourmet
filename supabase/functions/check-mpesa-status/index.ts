@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
+const ENV = Deno.env.get("MPESA_ENV") === "production" ? "production" : "sandbox";
+const BASE_URL = ENV === "production"
+  ? "https://api.safaricom.co.ke"
+  : "https://sandbox.safaricom.co.ke";
+
 const MPESA_CONSUMER_KEY = Deno.env.get("MPESA_CONSUMER_KEY")!;
 const MPESA_CONSUMER_SECRET = Deno.env.get("MPESA_CONSUMER_SECRET")!;
 const MPESA_PASSKEY = Deno.env.get("MPESA_PASSKEY")!;
@@ -26,7 +31,7 @@ function getPassword(): string {
 async function getAccessToken(): Promise<string> {
   const auth = btoa(MPESA_CONSUMER_KEY + ":" + MPESA_CONSUMER_SECRET);
   const response = await fetch(
-    "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+    `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
     { headers: { Authorization: "Basic " + auth } },
   );
   const data = await response.json();
@@ -52,7 +57,7 @@ serve(async (req) => {
     };
 
     const response = await fetch(
-      "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query",
+      `${BASE_URL}/mpesa/stkpushquery/v1/query`,
       {
         method: "POST",
         headers: {

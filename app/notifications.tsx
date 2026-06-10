@@ -1,13 +1,42 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../styles/colors";
 import { useNotification } from "../context/NotificationContext";
+
+const PREFS_KEY = "gogourmet_notification_prefs";
 
 export default function NotificationsScreen() {
   const { expoPushToken, permissionGranted, setupDone } = useNotification();
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotions, setPromotions] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(PREFS_KEY).then((saved) => {
+      if (saved) {
+        try {
+          const prefs = JSON.parse(saved);
+          setOrderUpdates(prefs.orderUpdates ?? true);
+          setPromotions(prefs.promotions ?? false);
+        } catch {}
+      }
+    });
+  }, []);
+
+  const savePrefs = useCallback(async (updates: boolean, promos: boolean) => {
+    await AsyncStorage.setItem(PREFS_KEY, JSON.stringify({ orderUpdates: updates, promotions: promos }));
+  }, []);
+
+  const handleOrderUpdates = (val: boolean) => {
+    setOrderUpdates(val);
+    savePrefs(val, promotions);
+  };
+
+  const handlePromotions = (val: boolean) => {
+    setPromotions(val);
+    savePrefs(orderUpdates, val);
+  };
 
   const copyToken = () => {
     if (expoPushToken) {
@@ -46,7 +75,7 @@ export default function NotificationsScreen() {
           </View>
           <Switch
             value={orderUpdates}
-            onValueChange={setOrderUpdates}
+            onValueChange={handleOrderUpdates}
             trackColor={{ false: "#ddd", true: COLORS.secondary }}
             thumbColor={orderUpdates ? COLORS.primary : "#f4f3f4"}
           />
@@ -62,7 +91,7 @@ export default function NotificationsScreen() {
           </View>
           <Switch
             value={promotions}
-            onValueChange={setPromotions}
+            onValueChange={handlePromotions}
             trackColor={{ false: "#ddd", true: COLORS.secondary }}
             thumbColor={promotions ? COLORS.primary : "#f4f3f4"}
           />

@@ -14,17 +14,26 @@ import { COLORS } from "../styles/colors";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 import { supabase } from "../services/supabaseClient";
+import { useToast } from "../context/ToastContext";
+import { analytics } from "../services/analytics";
 
 export default function SignupScreen() {
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationSent, setConfirmationSent] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const handleSignup = async () => {
     setError("");
+    if (!displayName.trim()) {
+      setError("Please enter your name");
+      return;
+    }
     if (!email.trim()) {
       setError("Please enter your email");
       return;
@@ -44,9 +53,20 @@ export default function SignupScreen() {
 
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: displayName.trim() } },
+      });
       if (error) throw error;
-      router.replace("/(tabs)/home");
+
+      if (data?.user?.identities?.length === 0) {
+        setConfirmationSent(true);
+        showToast("Confirmation email sent. Check your inbox.", "success");
+      } else {
+        analytics.track("user_registered", { user_id: data?.user?.id ?? "" });
+        router.replace("/(tabs)/home");
+      }
     } catch (err: any) {
       setError(
         err.message?.includes("already registered")
@@ -63,86 +83,118 @@ export default function SignupScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.header}>
-        <Text style={styles.appName}>GoGourmet</Text>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join us and start ordering</Text>
-      </View>
-
-      {error ? (
-        <View style={styles.errorBanner}>
-          <Ionicons name="alert-circle" size={18} color="#fff" />
-          <Text style={styles.errorText}>{error}</Text>
+      {confirmationSent ? (
+        <View style={styles.confirmContainer}>
+          <Ionicons name="mail-unread-outline" size={64} color={COLORS.primary} />
+          <Text style={styles.confirmTitle}>Check Your Email</Text>
+          <Text style={styles.confirmText}>
+            We sent a confirmation link to {email}. Please verify your email before logging in.
+          </Text>
+          <TouchableOpacity style={styles.button} onPress={() => router.push("/login")}>
+            <Text style={styles.buttonText}>Go to Login</Text>
+          </TouchableOpacity>
         </View>
-      ) : null}
+      ) : (
+        <>
+          <View style={styles.header}>
+            <Text style={styles.appName}>GoGourmet</Text>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join us and start ordering</Text>
+          </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name="mail-outline"
-          size={20}
-          color={COLORS.subText}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-      </View>
+          {error ? (
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle" size={18} color="#fff" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name="lock-closed-outline"
-          size={20}
-          color={COLORS.subText}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="person-outline"
+              size={20}
+              color={COLORS.subText}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Full Name"
+              value={displayName}
+              onChangeText={setDisplayName}
+              autoCapitalize="words"
+              style={styles.input}
+              placeholderTextColor="#999"
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name="lock-closed-outline"
-          size={20}
-          color={COLORS.subText}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="mail-outline"
+              size={20}
+              color={COLORS.subText}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={styles.input}
+              placeholderTextColor="#999"
+            />
+          </View>
 
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSignup}
-        disabled={loading}
-      >
-        {loading ? (
-          <LoadingSpinner size="small" color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign Up</Text>
-        )}
-      </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={20}
+              color={COLORS.subText}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+              placeholderTextColor="#999"
+            />
+          </View>
 
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={styles.link}>Already have an account? Login</Text>
-      </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={20}
+              color={COLORS.subText}
+              style={styles.inputIcon}
+            />
+            <TextInput
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              style={styles.input}
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSignup}
+            disabled={loading}
+          >
+            {loading ? (
+              <LoadingSpinner size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign Up</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => router.push("/login")}>
+            <Text style={styles.link}>Already have an account? Login</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -221,5 +273,23 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textAlign: "center",
     fontSize: 14,
+  },
+  confirmContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    gap: 16,
+  },
+  confirmTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  confirmText: {
+    fontSize: 15,
+    color: COLORS.subText,
+    textAlign: "center",
+    lineHeight: 22,
   },
 });

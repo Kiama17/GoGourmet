@@ -262,7 +262,7 @@ export default function AddressesScreen() {
     setPendingAddress(null);
   };
 
-  if (loading && !modalVisible) return <LoadingSpinner fullScreen />;
+  if (loading && !modalVisible) return <LoadingSpinner fullScreen skeleton="addresses" />;
 
   return (
     <View style={styles.container}>

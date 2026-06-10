@@ -2,7 +2,7 @@
   "expo": {
     "name": "GoGourmet",
     "slug": "gogourmet",
-    "version": "1.0.0-beta",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "userInterfaceStyle": "light",
@@ -49,8 +49,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow GoGourment to use your location to set delivery address.",
-          "locationWhenInUsePermission": "Allow GoGourment to use your location to set delivery address."
+          "locationAlwaysAndWhenInUsePermission": "Allow GoGourmet to use your location to set delivery address.",
+          "locationWhenInUsePermission": "Allow GoGourmet to use your location to set delivery address."
         }
       ],
       [
@@ -62,11 +62,13 @@
       ],
       "expo-font",
       "expo-image",
-      "expo-status-bar"
+      "expo-status-bar",
+      "sentry-expo"
     ],
     "extra": {
       "supabaseUrl": "https://fvkqqhrwnhwstbyophnc.supabase.co",
       "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8",
+      "sentryDsn": "",
       "router": {},
       "eas": {
         "projectId": "1364470b-a522-4860-b2ba-53288a2c48be"

@@ -13,12 +13,16 @@ import { COLORS } from "../../styles/colors";
 
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useOrders } from "../../context/OrdersContext";
+import { analytics } from "../../services/analytics";
 import {
   checkMpesaStatus,
   initiateMpesaPayment,
 } from "../../services/mpesa";
 
 type PaymentStage = "sending" | "pin" | "processing" | "success" | "failed";
+
+const POLL_INTERVALS = [3, 5, 8, 10, 15, 20];
+const MAX_POLLS = POLL_INTERVALS.length;
 
 export default function PaymentScreen() {
   const { phone, amount, name, address } = useLocalSearchParams<{
@@ -27,11 +31,15 @@ export default function PaymentScreen() {
     name: string;
     address: string;
   }>();
-  const { placeOrder } = useOrders();
+  const { placeOrder, updateOrderStatus } = useOrders();
   const [stage, setStage] = useState<PaymentStage>("sending");
   const [errorMsg, setErrorMsg] = useState("");
+  const [pollsRemaining, setPollsRemaining] = useState(MAX_POLLS);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const spinAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const pollingRef = useRef(false);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     Animated.loop(
@@ -42,8 +50,15 @@ export default function PaymentScreen() {
         useNativeDriver: true,
       }),
     ).start();
-
-    initPayment();
+    placeOrder({ phone, address, navigateToOrders: false, status: "Pending" }).then((id) => {
+      if (id) setOrderId(id);
+      initPayment();
+    }).catch(() => {
+      setStage("failed");
+      setErrorMsg("Failed to create order. Please try again.");
+      pollingRef.current = false;
+    });
+    return () => { cancelledRef.current = true; };
   }, []);
 
   useEffect(() => {
@@ -59,9 +74,36 @@ export default function PaymentScreen() {
     outputRange: ["0deg", "360deg"],
   });
 
+  const pollStatus = async (checkoutRequestID: string, pollIndex: number) => {
+    if (cancelledRef.current || pollIndex >= MAX_POLLS) return;
+    setPollsRemaining(MAX_POLLS - pollIndex - 1);
+    await new Promise((r) => setTimeout(r, POLL_INTERVALS[pollIndex] * 1000));
+    if (cancelledRef.current) return;
+    setStage("processing");
+    try {
+      const status = await checkMpesaStatus(checkoutRequestID);
+      if (cancelledRef.current) return;
+      if (status.success) {
+        setStage("success");
+        analytics.track("payment_success", { order_id: orderId ?? "", amount });
+        if (orderId) await updateOrderStatus(orderId, "Preparing");
+        await new Promise((r) => setTimeout(r, 1500));
+        router.replace("/checkout/success");
+      } else {
+        pollStatus(checkoutRequestID, pollIndex + 1);
+      }
+    } catch {
+      pollStatus(checkoutRequestID, pollIndex + 1);
+    }
+  };
+
   const initPayment = async () => {
+    if (pollingRef.current) return;
+    pollingRef.current = true;
+    cancelledRef.current = false;
     try {
       setStage("sending");
+      setErrorMsg("");
       const result = await initiateMpesaPayment({
         phone: phone || "0712345678",
         amount: parseInt(amount || "0", 10),
@@ -71,34 +113,37 @@ export default function PaymentScreen() {
 
       if (!result.success || !result.checkoutRequestID) {
         setStage("failed");
+        analytics.track("payment_failed", { error: result.message || "Failed to initiate payment", amount });
         setErrorMsg(result.message || "Failed to initiate payment");
+        pollingRef.current = false;
         return;
       }
 
       setStage("pin");
-
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      setStage("processing");
-      const status = await checkMpesaStatus(result.checkoutRequestID);
-
-      if (status.success) {
-        setStage("success");
-        await placeOrder({ phone, address });
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        router.replace("/checkout/success");
-      } else {
-        setStage("failed");
-        setErrorMsg(status.message || "Payment was not completed");
-      }
-    } catch {
+      setPollsRemaining(MAX_POLLS);
+      pollStatus(result.checkoutRequestID, 0);
+    } catch (e) {
       setStage("failed");
+      analytics.track("payment_failed", { error: (e as Error).message, amount });
       setErrorMsg("Something went wrong. Please try again.");
+      pollingRef.current = false;
     }
   };
 
   const handleCancel = () => {
-    router.back();
+    cancelledRef.current = true;
+    pollingRef.current = false;
+    if (orderId) {
+      router.replace("/(tabs)/orders");
+    } else {
+      router.back();
+    }
+  };
+
+  const handleRetry = () => {
+    pollingRef.current = false;
+    cancelledRef.current = false;
+    initPayment();
   };
 
   return (
@@ -127,7 +172,9 @@ export default function PaymentScreen() {
               Enter your M-Pesa PIN on the STK Push prompt sent to {phone}
             </Text>
             <LoadingSpinner size="small" />
-            <Text style={styles.hint}>Waiting for confirmation...</Text>
+            <Text style={styles.hint}>
+              Waiting for confirmation{pollsRemaining < MAX_POLLS ? ` (${pollsRemaining}s timeout)` : ""}...
+            </Text>
           </>
         )}
 
@@ -136,10 +183,15 @@ export default function PaymentScreen() {
             <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]}>
               <Ionicons name="sync" size={64} color={COLORS.primary} />
             </Animated.View>
-            <Text style={styles.title}>Processing Payment</Text>
+            <Text style={styles.title}>Confirming Payment</Text>
             <Text style={styles.subtitle}>
-              Please wait while we confirm your payment
+              Please wait while we confirm with M-Pesa
             </Text>
+            {pollsRemaining > 0 && (
+              <Text style={styles.hint}>
+                Checking... {pollsRemaining} attempt{pollsRemaining !== 1 ? "s" : ""} remaining
+              </Text>
+            )}
           </>
         )}
 
@@ -149,7 +201,7 @@ export default function PaymentScreen() {
               <Ionicons name="checkmark-circle" size={80} color={COLORS.success} />
             </View>
             <Text style={styles.title}>Payment Successful!</Text>
-            <Text style={styles.subtitle}>Redirecting to order details...</Text>
+            <Text style={styles.subtitle}>Redirecting to your orders...</Text>
           </>
         )}
 
@@ -159,12 +211,15 @@ export default function PaymentScreen() {
               <Ionicons name="close-circle" size={80} color={COLORS.danger} />
             </View>
             <Text style={styles.title}>Payment Failed</Text>
-            <Text style={styles.errorText}>{errorMsg}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={initPayment}>
-              <Text style={styles.retryButtonText}>Try Again</Text>
+            <Text style={styles.errorText}>
+              {errorMsg || "We couldn't confirm your payment. You can try again or cancel."}
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+              <Ionicons name="refresh-outline" size={18} color="#fff" />
+              <Text style={styles.buttonText}>Try Again</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel Order</Text>
             </TouchableOpacity>
           </>
         )}
@@ -228,14 +283,17 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   retryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,
     width: "100%",
-    alignItems: "center",
   },
-  retryButtonText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
+  buttonText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
   cancelButton: {
     marginTop: 12,
     paddingVertical: 14,

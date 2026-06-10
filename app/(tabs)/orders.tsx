@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,6 +15,7 @@ import { COLORS } from "../../styles/colors";
 import EmptyState from "../../components/EmptyState";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useOrders } from "../../context/OrdersContext";
+import { useToast } from "../../context/ToastContext";
 
 const statusColors: Record<string, string> = {
   Preparing: "#ff9800",
@@ -21,13 +24,45 @@ const statusColors: Record<string, string> = {
   Pending: "#999",
 };
 
+const CANCELLABLE_STATUSES = ["Pending", "Preparing"];
+
 export default function OrdersScreen() {
-  const { orders, fetchOrders, loading } = useOrders();
+  const { orders, fetchOrders, loading, cancelOrder } = useOrders();
   const router = useRouter();
+  const { showToast } = useToast();
+  const [refreshing, setRefreshing] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchOrders();
+    setRefreshing(false);
+  }, [fetchOrders]);
+
+  const handleCancel = (orderId: string) => {
+    Alert.alert("Cancel Order", "Are you sure you want to cancel this order?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes, Cancel",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setCancellingId(orderId);
+            await cancelOrder(orderId);
+            showToast("Order cancelled", "info");
+          } catch {
+            showToast("Failed to cancel order", "error");
+          } finally {
+            setCancellingId(null);
+          }
+        },
+      },
+    ]);
+  };
 
   if (loading) {
     return <LoadingSpinner fullScreen skeleton="orders" />;
@@ -58,6 +93,9 @@ export default function OrdersScreen() {
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -78,6 +116,21 @@ export default function OrdersScreen() {
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.total}>KES {item.total}</Text>
             </View>
+            {CANCELLABLE_STATUSES.includes(item.status) && (
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => handleCancel(item.id)}
+                disabled={cancellingId === item.id}
+                accessibilityLabel={`Cancel order ${item.id.slice(0, 8)}`}
+                accessibilityRole="button"
+              >
+                {cancellingId === item.id ? (
+                  <LoadingSpinner size="small" color={COLORS.danger} />
+                ) : (
+                  <Text style={styles.cancelButtonText}>Cancel Order</Text>
+                )}
+              </TouchableOpacity>
+            )}
           </View>
         )}
       />
@@ -166,5 +219,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: COLORS.primary,
+  },
+  cancelButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.danger,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: COLORS.danger,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

@@ -43,6 +43,8 @@ const CartItemRow = memo(function CartItemRow({
           <TouchableOpacity
             style={styles.qtyButton}
             onPress={() => onDecrease(item.id)}
+            accessibilityLabel={`Decrease quantity of ${item.name}`}
+            accessibilityRole="button"
           >
             <Ionicons name="remove" size={18} color="#fff" />
           </TouchableOpacity>
@@ -50,6 +52,8 @@ const CartItemRow = memo(function CartItemRow({
           <TouchableOpacity
             style={styles.qtyButton}
             onPress={() => onIncrease(item.id)}
+            accessibilityLabel={`Increase quantity of ${item.name}`}
+            accessibilityRole="button"
           >
             <Ionicons name="add" size={18} color="#fff" />
           </TouchableOpacity>
@@ -145,6 +149,8 @@ export default function CartScreen() {
         <TouchableOpacity
           style={styles.checkoutButton}
           onPress={() => router.push("/checkout")}
+          accessibilityLabel="Proceed to checkout"
+          accessibilityRole="button"
         >
           <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
           <Ionicons name="arrow-forward" size={20} color="#fff" />

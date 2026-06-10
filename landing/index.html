@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoGourmet — Premium Food Delivery in Kenya</title>
+  <meta name="description" content="GoGourmet brings the best Kenyan and international cuisine straight to your door. Order from top restaurants in Meru with fast, reliable delivery.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange: #F97316;
+      --orange-dark: #EA580C;
+      --orange-light: #FFF7ED;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-900: #111827;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--gray-900);
+      background: #fff;
+      line-height: 1.6;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Header */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .logo { font-size: 28px; font-weight: 800; color: var(--orange); letter-spacing: -0.5px; }
+    .logo span { color: var(--gray-900); }
+    .header-cta {
+      background: var(--orange); color: #fff; padding: 10px 24px;
+      border-radius: 100px; text-decoration: none; font-weight: 600; font-size: 14px;
+      transition: background .2s;
+    }
+    .header-cta:hover { background: var(--orange-dark); }
+
+    /* Hero */
+    .hero {
+      display: flex; align-items: center; gap: 48px;
+      padding: 64px 24px; max-width: 1100px; margin: 0 auto;
+    }
+    .hero-text { flex: 1; }
+    .hero-text h1 { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -1px; }
+    .hero-text h1 span { color: var(--orange); }
+    .hero-text p { font-size: 18px; color: var(--gray-500); margin: 20px 0 32px; max-width: 480px; }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary, .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border-radius: 100px; font-weight: 600; font-size: 16px;
+      text-decoration: none; transition: all .2s;
+    }
+    .btn-primary { background: var(--orange); color: #fff; }
+    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
+    .btn-secondary { background: var(--orange-light); color: var(--orange); }
+    .btn-secondary:hover { background: #FFEDD5; transform: translateY(-1px); }
+    .hero-visual {
+      flex: 1; background: var(--orange-light); border-radius: 32px;
+      padding: 48px; text-align: center; font-size: 120px; line-height: 1;
+      box-shadow: 0 20px 60px rgba(249,115,22,0.15);
+    }
+
+    /* Features */
+    .features { padding: 80px 24px; background: var(--gray-50); }
+    .features h2 { text-align: center; font-size: 36px; font-weight: 700; margin-bottom: 48px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; }
+    .feature-card {
+      background: #fff; border-radius: 20px; padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform .2s, box-shadow .2s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+    .feature-icon { font-size: 40px; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { color: var(--gray-500); font-size: 15px; }
+
+    /* Download */
+    .download { padding: 80px 24px; text-align: center; }
+    .download h2 { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+    .download p { color: var(--gray-500); font-size: 18px; margin-bottom: 32px; }
+    .store-badges { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .store-badge {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--gray-900); color: #fff; padding: 14px 28px;
+      border-radius: 14px; text-decoration: none; transition: background .2s;
+    }
+    .store-badge:hover { background: #000; }
+    .store-badge .sub { font-size: 11px; opacity: .7; }
+    .store-badge .main { font-size: 18px; font-weight: 600; }
+    .store-badge.coming { opacity: .5; pointer-events: none; }
+    .store-badge .badge { font-size: 10px; background: var(--orange); color: #fff; padding: 2px 8px; border-radius: 100px; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--gray-100); padding: 32px 24px; text-align: center; color: var(--gray-500); font-size: 14px; }
+    footer a { color: var(--orange); text-decoration: none; }
+
+    /* M-Pesa */
+    .mpesa-bar { background: var(--gray-50); padding: 48px 24px; text-align: center; }
+    .mpesa-bar h3 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .mpesa-bar p { color: var(--gray-500); max-width: 500px; margin: 0 auto; }
+
+    @media (max-width: 768px) {
+      .hero { flex-direction: column; text-align: center; padding: 40px 24px; }
+      .hero-text p { margin-left: auto; margin-right: auto; }
+      .hero-buttons { justify-content: center; }
+      .hero-text h1 { font-size: 36px; }
+      .hero-visual { width: 100%; font-size: 80px; padding: 32px; }
+      header { padding: 16px 24px; }
+      .features h2 { font-size: 28px; }
+      .download h2 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Go<span>Gourmet</span></div>
+    <a class="header-cta" href="#download">Get the App</a>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Delicious food,<br><span>delivered fast.</span></h1>
+      <p>From local Kenyan favourites to international cuisine — GoGourmet brings the best restaurants in Meru straight to your door.</p>
+      <div class="hero-buttons">
+        <a class="btn-primary" href="#download">Download Now</a>
+        <a class="btn-secondary" href="#features">See Features</a>
+      </div>
+    </div>
+    <div class="hero-visual">🍕</div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Why GoGourmet?</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🍔</div>
+        <h3>Curated Restaurants</h3>
+        <p>Only the best-reviewed restaurants in Meru, vetted for quality and hygiene.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Real-time Tracking</h3>
+        <p>Track your order from kitchen to doorstep with live delivery status updates.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <h3>M-Pesa Payments</h3>
+        <p>Pay seamlessly via M-Pesa. No cards needed — just your phone.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>Save Addresses</h3>
+        <p>Save home, work, and other addresses for one-tap reordering.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <h3>Rate &amp; Review</h3>
+        <p>Share your experience and help others discover Meru's best food.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🚚</div>
+        <h3>Distance-based Pricing</h3>
+        <p>Fair delivery fees calculated by distance. No hidden charges.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mpesa-bar">
+    <h3>💳 Powered by M-Pesa</h3>
+    <p>Secure, instant payments via Safaricom's M-Pesa — Kenya's most trusted mobile money platform.</p>
+  </section>
+
+  <section class="download" id="download">
+    <h2>Get Started Today</h2>
+    <p>Available now on Android. Coming soon to iOS.</p>
+    <div class="store-badges">
+      <a class="store-badge" href="https://expo.dev/artifacts/eas/aVyHnCxTF72MQcugG97a86.apk" target="_blank" rel="noopener">
+        <span>📱</span>
+        <span><span class="sub">Download for</span><br><span class="main">Android APK</span></span>
+      </a>
+      <a class="store-badge coming">
+        <span>🍎</span>
+        <span><span class="sub">Coming soon</span><br><span class="main">App Store</span> <span class="badge">Soon</span></span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 GoGourmet. Made with ❤️ in Meru, Kenya.</p>
+    <p style="margin-top: 4px;"><a href="mailto:hello@gogourmet.co.ke">hello@gogourmet.co.ke</a></p>
+  </footer>
+</body>
+</html>

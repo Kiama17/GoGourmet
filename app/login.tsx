@@ -14,6 +14,8 @@ import { COLORS } from "../styles/colors";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 import { supabase } from "../services/supabaseClient";
+import { useToast } from "../context/ToastContext";
+import { analytics } from "../services/analytics";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -29,7 +31,8 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      await supabase.auth.signInWithPassword({ email, password });
+      const { data } = await supabase.auth.signInWithPassword({ email, password });
+      analytics.track("user_logged_in", { user_id: data?.user?.id ?? "" });
       router.replace("/(tabs)/home");
     } catch (err: any) {
       setError(err.message.includes("invalid-credential")
@@ -95,6 +98,10 @@ export default function LoginScreen() {
         )}
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => router.push("/forgot-password")}>
+        <Text style={styles.forgotLink}>Forgot Password?</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={() => router.push("/signup")}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
@@ -141,4 +148,5 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
   link: { marginTop: 20, textAlign: "center", color: COLORS.primary, fontSize: 15, fontWeight: "500" },
+  forgotLink: { marginTop: 4, textAlign: "center", color: COLORS.subText, fontSize: 14 },
 });

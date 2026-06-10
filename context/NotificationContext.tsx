@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { supabase } from "../services/supabaseClient";
 
 type NotificationState = {
   expoPushToken: string | null;
@@ -43,6 +44,7 @@ export const NotificationProvider = ({
     if (token) {
       setExpoPushToken(token);
       setPermissionGranted(true);
+      await supabase.rpc("upsert_push_token", { p_token: token });
     }
 
     subscribeToNotifications(

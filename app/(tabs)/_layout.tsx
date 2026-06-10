@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { COLORS } from "../../styles/colors";
 import { useCart } from "../../context/CartContext";
 
 function CartBadge() {
@@ -18,7 +19,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#ff6b00",
+        tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
           height: 65,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -6,
     right: -10,
-    backgroundColor: "#ff6b00",
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     minWidth: 18,
     height: 18,

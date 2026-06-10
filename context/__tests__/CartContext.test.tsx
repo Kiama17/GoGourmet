@@ -2,6 +2,10 @@ import { act, renderHook } from "@testing-library/react-native";
 import React, { ReactNode } from "react";
 import { CartProvider, useCart } from "../CartContext";
 
+jest.mock("../AuthContext", () => ({
+  useAuth: () => ({ user: null }),
+}));
+
 const wrapper = ({ children }: { children: ReactNode }) => (
   <CartProvider>{children}</CartProvider>
 );

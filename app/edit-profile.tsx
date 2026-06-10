@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
+import { Image } from "expo-image";
 import {
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,12 +17,13 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
 
 export default function EditProfileScreen() {
-  const { user, updateProfile, loading } = useAuth();
+  const { user, profile, updateProfile, loading } = useAuth();
   const { pickedAddress } = useLocalSearchParams<{ pickedAddress?: string }>();
-  const [displayName, setDisplayName] = useState(user?.user_metadata?.display_name || "");
+  const [displayName, setDisplayName] = useState(profile?.display_name || user?.user_metadata?.display_name || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [phone, setPhone] = useState(user?.user_metadata?.phone || "");
-  const [address, setAddress] = useState(user?.user_metadata?.address || "");
+  const [phone, setPhone] = useState(profile?.phone || user?.user_metadata?.phone || "");
+  const [address, setAddress] = useState(profile?.address || user?.user_metadata?.address || "");
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || "");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function EditProfileScreen() {
     }
     try {
       setSaving(true);
-      await updateProfile({ display_name: displayName.trim(), email: email.trim(), phone: phone.trim(), address: address.trim() });
+      await updateProfile({ display_name: displayName.trim(), email: email.trim(), phone: phone.trim(), address: address.trim(), avatar_url: avatarUrl.trim() || undefined });
       Alert.alert("Success", "Profile updated", [{ text: "OK", onPress: () => router.back() }]);
     } catch (e) {
       console.error("Update profile error:", e);
@@ -63,7 +64,11 @@ export default function EditProfileScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Image source={require("../assets/images/avatar.png")} style={styles.avatar} />
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+        ) : (
+          <Ionicons name="person-circle" size={90} color="rgba(255,255,255,0.8)" />
+        )}
         <Text style={styles.title}>Edit Profile</Text>
       </View>
 
@@ -105,6 +110,16 @@ export default function EditProfileScreen() {
             <Ionicons name="map-outline" size={22} color="#fff" />
           </TouchableOpacity>
         </View>
+
+        <Text style={styles.label}>Avatar URL</Text>
+        <TextInput
+          style={styles.input}
+          value={avatarUrl}
+          onChangeText={setAvatarUrl}
+          placeholder="https://example.com/avatar.jpg"
+          autoCapitalize="none"
+          placeholderTextColor="#999"
+        />
 
         <Text style={styles.label}>Email</Text>
         <TextInput
