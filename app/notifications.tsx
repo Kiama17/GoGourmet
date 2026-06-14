@@ -2,13 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import { COLORS } from "../styles/colors";
 import { useNotification } from "../context/NotificationContext";
+import { useApp } from "../hooks/useApp";
 
 const PREFS_KEY = "gogourmet_notification_prefs";
 
 export default function NotificationsScreen() {
   const { expoPushToken, permissionGranted, setupDone } = useNotification();
+  const { colors, t } = useApp();
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotions, setPromotions] = useState(false);
 
@@ -45,69 +46,69 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.statusCard}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.statusCard, { backgroundColor: colors.card }]}>
         <Ionicons
           name={permissionGranted ? "notifications" : "notifications-off"}
           size={40}
-          color={permissionGranted ? COLORS.success : COLORS.subText}
+          color={permissionGranted ? colors.success : colors.subText}
         />
-        <Text style={styles.statusTitle}>
-          {permissionGranted ? "Notifications Enabled" : "Notifications Disabled"}
+        <Text style={[styles.statusTitle, { color: colors.text }]}>
+          {permissionGranted ? t("notifications.enabled") : t("notifications.disabled")}
         </Text>
-        <Text style={styles.statusSubtitle}>
-          {permissionGranted
-            ? "You will receive order updates and alerts"
-            : "Enable notifications in your device settings"}
+        <Text style={[styles.statusSubtitle, { color: colors.subText }]}>
+          {permissionGranted ? t("notifications.enabledDesc") : t("notifications.disabledDesc")}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t("notifications.preferences")}</Text>
 
-        <View style={styles.row}>
+        <View style={[styles.row, { borderBottomColor: colors.border }]}>
           <View style={styles.rowInfo}>
-            <Ionicons name="receipt-outline" size={22} color={COLORS.primary} />
+            <Ionicons name="receipt-outline" size={22} color={colors.primary} />
             <View style={styles.rowText}>
-              <Text style={styles.rowLabel}>Order Updates</Text>
-              <Text style={styles.rowSub}>Status changes and delivery alerts</Text>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>{t("notifications.orderUpdates")}</Text>
+              <Text style={[styles.rowSub, { color: colors.subText }]}>{t("notifications.orderUpdatesDesc")}</Text>
             </View>
           </View>
           <Switch
             value={orderUpdates}
             onValueChange={handleOrderUpdates}
-            trackColor={{ false: "#ddd", true: COLORS.secondary }}
-            thumbColor={orderUpdates ? COLORS.primary : "#f4f3f4"}
+            trackColor={{ false: "#ddd", true: colors.secondary }}
+            thumbColor={orderUpdates ? colors.primary : "#f4f3f4"}
           />
         </View>
 
-        <View style={styles.row}>
+        <View style={[styles.row, { borderBottomColor: colors.border }]}>
           <View style={styles.rowInfo}>
-            <Ionicons name="pricetag-outline" size={22} color={COLORS.subText} />
+            <Ionicons name="pricetag-outline" size={22} color={colors.subText} />
             <View style={styles.rowText}>
-              <Text style={[styles.rowLabel, { color: COLORS.subText }]}>Promotions</Text>
-              <Text style={styles.rowSub}>Special offers and discounts</Text>
+              <Text style={[styles.rowLabel, { color: colors.subText }]}>{t("notifications.promotions")}</Text>
+              <Text style={[styles.rowSub, { color: colors.subText }]}>{t("notifications.promotionsDesc")}</Text>
             </View>
           </View>
           <Switch
             value={promotions}
             onValueChange={handlePromotions}
-            trackColor={{ false: "#ddd", true: COLORS.secondary }}
-            thumbColor={promotions ? COLORS.primary : "#f4f3f4"}
+            trackColor={{ false: "#ddd", true: colors.secondary }}
+            thumbColor={promotions ? colors.primary : "#f4f3f4"}
           />
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Device Info</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t("notifications.deviceInfo")}</Text>
         {expoPushToken ? (
-          <TouchableOpacity style={styles.tokenRow} onPress={copyToken}>
-            <Text style={styles.tokenLabel}>Expo Push Token</Text>
-            <Text style={styles.tokenValue} numberOfLines={1}>{expoPushToken}</Text>
-            <Ionicons name="copy-outline" size={16} color={COLORS.subText} />
+          <TouchableOpacity style={[styles.tokenRow, { backgroundColor: colors.card }]} onPress={copyToken}>
+            <Text style={[styles.tokenLabel, { color: colors.subText }]}>{t("notifications.pushToken")}</Text>
+            <Text style={[styles.tokenValue, { color: colors.text }]} numberOfLines={1}>{expoPushToken}</Text>
+            <Ionicons name="copy-outline" size={16} color={colors.subText} />
           </TouchableOpacity>
         ) : (
-          <Text style={styles.noToken}>No push token available{setupDone ? "" : " (initializing...)"}</Text>
+          <Text style={[styles.noToken, { color: colors.subText }]}>
+            {t("notifications.noToken")}{setupDone ? "" : ` (${t("notifications.initializing")})`}
+          </Text>
         )}
       </View>
     </ScrollView>
@@ -115,17 +116,16 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: { flex: 1, padding: 20 },
   statusCard: {
     alignItems: "center",
-    backgroundColor: COLORS.card,
     borderRadius: 16,
     padding: 30,
     marginBottom: 24,
     gap: 8,
   },
   statusTitle: { fontSize: 18, fontWeight: "bold", marginTop: 8 },
-  statusSubtitle: { fontSize: 14, color: COLORS.subText, textAlign: "center", lineHeight: 20 },
+  statusSubtitle: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 14 },
   row: {
@@ -134,21 +134,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.card,
   },
   rowInfo: { flexDirection: "row", alignItems: "center", flex: 1, gap: 12 },
   rowText: { flex: 1 },
   rowLabel: { fontSize: 16, fontWeight: "600" },
-  rowSub: { fontSize: 13, color: COLORS.subText, marginTop: 2 },
+  rowSub: { fontSize: 13, marginTop: 2 },
   tokenRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 12,
     gap: 8,
   },
-  tokenLabel: { fontSize: 13, color: COLORS.subText, minWidth: 100 },
-  tokenValue: { flex: 1, fontSize: 12, color: COLORS.text },
-  noToken: { fontSize: 14, color: COLORS.subText, fontStyle: "italic" },
+  tokenLabel: { fontSize: 13, minWidth: 100 },
+  tokenValue: { flex: 1, fontSize: 12 },
+  noToken: { fontSize: 14, fontStyle: "italic" },
 });

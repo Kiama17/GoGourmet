@@ -1,10 +1,15 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import React from "react";
+import { ThemeProvider } from "../../context/ThemeContext";
 import PaymentMethodSelector from "../PaymentMethodSelector";
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<ThemeProvider>{ui}</ThemeProvider>);
+}
 
 describe("PaymentMethodSelector", () => {
   it("renders both payment options", () => {
-    render(
+    renderWithProviders(
       <PaymentMethodSelector selected="cod" onSelect={() => {}} total={1000} />,
     );
     expect(screen.getByText("Cash on Delivery")).toBeTruthy();
@@ -12,7 +17,7 @@ describe("PaymentMethodSelector", () => {
   });
 
   it("renders descriptions for each method", () => {
-    render(
+    renderWithProviders(
       <PaymentMethodSelector selected="cod" onSelect={() => {}} total={1000} />,
     );
     expect(
@@ -25,7 +30,7 @@ describe("PaymentMethodSelector", () => {
 
   it("calls onSelect when Cash on Delivery is pressed", () => {
     const onSelect = jest.fn();
-    render(
+    renderWithProviders(
       <PaymentMethodSelector
         selected="mpesa"
         onSelect={onSelect}
@@ -38,7 +43,7 @@ describe("PaymentMethodSelector", () => {
 
   it("calls onSelect when M-Pesa is pressed", () => {
     const onSelect = jest.fn();
-    render(
+    renderWithProviders(
       <PaymentMethodSelector
         selected="cod"
         onSelect={onSelect}

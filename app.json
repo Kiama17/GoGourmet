@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/expo/expo/sdk-52/packages/@expo/config/schema/expo-config-schema.json",
   "expo": {
     "name": "GoGourmet",
     "slug": "gogourmet",
@@ -26,11 +27,6 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyCv33LQCrzbNJnVIwb_uEdVJoqfG0tiV4k"
-        }
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -65,15 +61,6 @@
       "expo-status-bar",
       "sentry-expo"
     ],
-    "extra": {
-      "supabaseUrl": "https://fvkqqhrwnhwstbyophnc.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8",
-      "sentryDsn": "",
-      "router": {},
-      "eas": {
-        "projectId": "1364470b-a522-4860-b2ba-53288a2c48be"
-      }
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },

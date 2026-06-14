@@ -1,183 +1,170 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Switch,
+} from "react-native";
 
-import { COLORS } from "../../styles/colors";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import { useAuth } from "../../context/AuthContext";
+import { useApp } from "../../hooks/useApp";
 
 export default function ProfileScreen() {
-  const { user, profile, logout, isAdmin } = useAuth();
+  const { user, profile, logout, loading, isAdmin } = useAuth();
+  const { colors, t, isDark, toggleTheme, locale, setLocale, availableLocales } = useApp();
+  const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
 
   const handleLogout = () => {
-    Alert.alert("Log Out", "Are you sure you want to log out?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Log Out",
-        style: "destructive",
-        onPress: async () => {
-          await logout();
-          router.replace("/login");
-        },
-      },
+    Alert.alert(t("auth.logout"), "Are you sure you want to log out?", [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("auth.logout"), style: "destructive", onPress: async () => {
+        setLoggingOut(true);
+        try { await logout(); } catch { /* ignore */ }
+        setLoggingOut(false);
+      }},
     ]);
   };
 
+  const toggleLanguage = () => {
+    const next = locale === "en" ? "sw" : "en";
+    setLocale(next);
+  };
+
+  if (loading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          {profile?.avatar_url ? (
-            <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
-          ) : (
-            <Ionicons name="person-circle" size={90} color={COLORS.primary} />
-          )}
-        </View>
-        <Text style={styles.username}>
-          {profile?.display_name || user?.user_metadata?.display_name || user?.email?.split("@")[0] || "User"}
-        </Text>
-        <Text style={styles.email}>{user?.email || ""}</Text>
-        {profile?.phone && <Text style={styles.phone}>{profile.phone}</Text>}
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <Ionicons name="person-circle-outline" size={80} color={colors.white} />
+        <Text style={styles.name}>{profile?.display_name || user?.email}</Text>
+        <Text style={styles.email}>{user?.email}</Text>
       </View>
 
-      <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/edit-profile")} accessibilityLabel="Edit Profile" accessibilityRole="button">
-          <Ionicons name="person-outline" size={22} color={COLORS.primary} />
-          <Text style={styles.menuText}>Edit Profile</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
+      <View style={styles.menu}>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/edit-profile")} accessibilityLabel={t("profile.editProfile")} accessibilityRole="button">
+          <Ionicons name="person-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.editProfile")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/addresses")} accessibilityLabel="Saved Addresses" accessibilityRole="button">
-          <Ionicons name="location-outline" size={22} color={COLORS.primary} />
-          <Text style={styles.menuText}>Saved Addresses</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/addresses")} accessibilityLabel={t("profile.savedAddresses")} accessibilityRole="button">
+          <Ionicons name="location-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.savedAddresses")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(tabs)/orders")} accessibilityLabel="Order History" accessibilityRole="button">
-          <Ionicons name="receipt-outline" size={22} color={COLORS.primary} />
-          <Text style={styles.menuText}>Order History</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/(tabs)/orders")} accessibilityLabel={t("profile.orderHistory")} accessibilityRole="button">
+          <Ionicons name="receipt-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.orderHistory")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/notifications")} accessibilityLabel="Notifications" accessibilityRole="button">
-          <Ionicons name="notifications-outline" size={22} color={COLORS.primary} />
-          <Text style={styles.menuText}>Notifications</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/notifications")} accessibilityLabel={t("profile.notifications")} accessibilityRole="button">
+          <Ionicons name="notifications-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.notifications")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
         </TouchableOpacity>
 
         {isAdmin && (
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/admin")} accessibilityLabel="Admin Dashboard" accessibilityRole="button">
-            <Ionicons name="shield-checkmark-outline" size={22} color={COLORS.primary} />
-            <Text style={[styles.menuText, { color: COLORS.primary, fontWeight: "bold" }]}>Admin Dashboard</Text>
-            <Ionicons name="chevron-forward" size={18} color={COLORS.primary} />
+          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/admin")} accessibilityLabel={t("profile.adminDashboard")} accessibilityRole="button">
+            <Ionicons name="shield-checkmark-outline" size={22} color={colors.text} />
+            <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.adminDashboard")}</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.subText} />
           </TouchableOpacity>
         )}
+
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
+          <Ionicons name="moon-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { flex: 1, color: colors.text }]}>{t("profile.darkMode")}</Text>
+          <Switch value={isDark} onValueChange={toggleTheme} trackColor={{ false: colors.border, true: colors.primary }} thumbColor={colors.white} />
+        </View>
+
+        <View style={[styles.menuItem, { borderBottomColor: colors.border }]}>
+          <Ionicons name="language-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { flex: 1, color: colors.text }]}>{t("profile.language")}</Text>
+          <TouchableOpacity onPress={toggleLanguage} accessibilityLabel={t("profile.language")} accessibilityRole="button">
+            <Text style={[styles.languageToggle, { color: colors.primary }]}>{availableLocales.find((l) => l.code === locale)?.name}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/terms")} accessibilityLabel={t("profile.termsOfService")} accessibilityRole="button">
+          <Ionicons name="document-text-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.termsOfService")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/privacy")} accessibilityLabel={t("profile.privacyPolicy")} accessibilityRole="button">
+          <Ionicons name="lock-closed-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.privacyPolicy")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => router.push("/contact")} accessibilityLabel={t("profile.contactUs")} accessibilityRole="button">
+          <Ionicons name="call-outline" size={22} color={colors.text} />
+          <Text style={[styles.menuText, { color: colors.text }]}>{t("profile.contactUs")}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.subText} />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.legalSection}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/terms")} accessibilityLabel="Terms of Service" accessibilityRole="button">
-          <Ionicons name="document-text-outline" size={22} color="#999" />
-          <Text style={[styles.menuText, { color: "#999" }]}>Terms of Service</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/privacy")} accessibilityLabel="Privacy Policy" accessibilityRole="button">
-          <Ionicons name="shield-outline" size={22} color="#999" />
-          <Text style={[styles.menuText, { color: "#999" }]}>Privacy Policy</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/contact")} accessibilityLabel="Contact Us" accessibilityRole="button">
-          <Ionicons name="mail-outline" size={22} color="#999" />
-          <Text style={[styles.menuText, { color: "#999" }]}>Contact Us</Text>
-          <Ionicons name="chevron-forward" size={18} color="#999" />
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} accessibilityLabel="Log Out" accessibilityRole="button">
-        <Ionicons name="log-out-outline" size={22} color="#fff" />
-        <Text style={styles.logoutText}>Log Out</Text>
+      <TouchableOpacity style={[styles.logoutButton, { backgroundColor: colors.danger }]} onPress={handleLogout} accessibilityLabel={t("auth.logout")} accessibilityRole="button" disabled={loggingOut}>
+        {loggingOut ? (
+          <LoadingSpinner size="small" color="#fff" />
+        ) : (
+          <>
+            <Ionicons name="log-out-outline" size={20} color={colors.white} />
+            <Text style={styles.logoutText}>{t("auth.logout")}</Text>
+          </>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
+  container: { flex: 1 },
   header: {
     alignItems: "center",
-    backgroundColor: "#fff",
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingTop: 60,
+    paddingBottom: 30,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  avatarContainer: {
-    marginBottom: 10,
-  },
-  avatarImage: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-  },
-  username: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    marginBottom: 4,
-  },
-  email: {
-    fontSize: 14,
-    color: "#999",
-  },
-  phone: {
-    fontSize: 14,
-    color: COLORS.primary,
-    marginTop: 4,
-  },
-  section: {
-    backgroundColor: "#fff",
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#f0f0f0",
-  },
+  name: { fontSize: 22, fontWeight: "bold", color: "#fff", marginTop: 12 },
+  email: { fontSize: 14, color: "rgba(255,255,255,0.8)", marginTop: 4 },
+  menu: { marginTop: 20, paddingHorizontal: 20 },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 16,
-    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    gap: 12,
   },
-  menuText: {
-    flex: 1,
-    fontSize: 15,
-    color: "#1a1a1a",
-    marginLeft: 14,
-  },
-  legalSection: {
-    backgroundColor: "#fff",
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#f0f0f0",
-  },
+  menuText: { flex: 1, fontSize: 16 },
+  languageToggle: { fontSize: 16, fontWeight: "600" },
+  divider: { height: 1, marginVertical: 8 },
   logoutButton: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.primary,
-    margin: 24,
-    padding: 16,
-    borderRadius: 12,
+    alignItems: "center",
     gap: 8,
+    marginHorizontal: 20,
+    marginTop: 30,
+    marginBottom: 40,
+    padding: 16,
+    borderRadius: 14,
   },
-  logoutText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  logoutText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
 });

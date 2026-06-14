@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
   Alert,
@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { COLORS } from "../../styles/colors";
+import { sanitize } from "../../utils/sanitize";
 
 import EmptyState from "../../components/EmptyState";
 import ErrorMessage from "../../components/ErrorMessage";
@@ -25,6 +26,39 @@ import {
   updateMenuItem,
   deleteMenuItem,
 } from "../../services/admin";
+
+interface AdminMenuItemProps {
+  item: any;
+  onEdit: (item: any) => void;
+  onDelete: (id: string) => void;
+}
+
+const AdminMenuItem = memo(function AdminMenuItem({ item, onEdit, onDelete }: AdminMenuItemProps) {
+  return (
+    <View style={styles.card}>
+      {item.image_url ? (
+        <Image source={{ uri: item.image_url }} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Ionicons name="image-outline" size={32} color="#ccc" />
+        </View>
+      )}
+      <View style={styles.cardInfo}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemCategory}>{item.category}</Text>
+        <Text style={styles.itemPrice}>KES {item.price}</Text>
+      </View>
+      <View style={styles.cardActions}>
+        <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(item)} accessibilityLabel={`Edit ${item.name}`} accessibilityRole="button">
+          <Ionicons name="create-outline" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item.id)} accessibilityLabel={`Delete ${item.name}`} accessibilityRole="button">
+          <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+});
 
 const categories = ["Burger", "Pizza", "Wraps", "Fries", "Drinks", "Local"];
 const PAGE_SIZE = 10;
@@ -182,28 +216,7 @@ export default function AdminMenuScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            {item.image_url ? (
-              <Image source={{ uri: item.image_url }} style={styles.image} />
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="image-outline" size={32} color="#ccc" />
-              </View>
-            )}
-            <View style={styles.cardInfo}>
-              <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={styles.itemCategory}>{item.category}</Text>
-              <Text style={styles.itemPrice}>KES {item.price}</Text>
-            </View>
-            <View style={styles.cardActions}>
-              <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(item)}>
-                <Ionicons name="create-outline" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item.id)}>
-                <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <AdminMenuItem item={item} onEdit={openEdit} onDelete={handleDelete} />
         )}
       />
 
@@ -228,7 +241,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={styles.input}
               value={form.name}
-              onChangeText={(t) => setForm((p) => ({ ...p, name: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, name: sanitize(v) }))}
               placeholder="Item name"
               placeholderTextColor="#999"
             />
@@ -237,7 +250,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={styles.input}
               value={form.price}
-              onChangeText={(t) => setForm((p) => ({ ...p, price: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, price: sanitize(v) }))}
               placeholder="e.g. 850"
               keyboardType="decimal-pad"
               placeholderTextColor="#999"
@@ -262,7 +275,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               value={form.description}
-              onChangeText={(t) => setForm((p) => ({ ...p, description: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, description: sanitize(v) }))}
               placeholder="Describe the item"
               multiline
               placeholderTextColor="#999"
@@ -272,7 +285,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={styles.input}
               value={form.image_url}
-              onChangeText={(t) => setForm((p) => ({ ...p, image_url: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, image_url: sanitize(v) }))}
               placeholder="https://..."
               placeholderTextColor="#999"
             />
@@ -281,7 +294,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={styles.input}
               value={form.rating}
-              onChangeText={(t) => setForm((p) => ({ ...p, rating: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, rating: sanitize(v) }))}
               placeholder="e.g. 4.5"
               keyboardType="decimal-pad"
               placeholderTextColor="#999"
@@ -291,7 +304,7 @@ export default function AdminMenuScreen() {
             <TextInput
               style={styles.input}
               value={form.stock_quantity}
-              onChangeText={(t) => setForm((p) => ({ ...p, stock_quantity: t }))}
+              onChangeText={(v) => setForm((p) => ({ ...p, stock_quantity: sanitize(v) }))}
               placeholder="e.g. 50"
               keyboardType="number-pad"
               placeholderTextColor="#999"

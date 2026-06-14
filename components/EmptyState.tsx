@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { COLORS } from "../styles/colors";
+import { useApp } from "../hooks/useApp";
 
 type EmptyStateProps = {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -19,15 +19,16 @@ export default function EmptyState({
   ctaIcon = "arrow-forward",
   onCtaPress,
 }: EmptyStateProps) {
+  const { colors } = useApp();
   return (
-    <View style={styles.container}>
-      <View style={styles.iconWrapper}>
-        <Ionicons name={icon} size={64} color={COLORS.primary} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.iconWrapper, { backgroundColor: colors.card, shadowColor: colors.primary }]}>
+        <Ionicons name={icon} size={64} color={colors.primary} />
       </View>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      {subtitle && <Text style={[styles.subtitle, { color: colors.subText }]}>{subtitle}</Text>}
       {ctaLabel && onCtaPress && (
-        <TouchableOpacity style={styles.cta} onPress={onCtaPress} activeOpacity={0.85} accessibilityLabel={ctaLabel} accessibilityRole="button">
+        <TouchableOpacity style={[styles.cta, { backgroundColor: colors.primary }]} onPress={onCtaPress} activeOpacity={0.85} accessibilityLabel={ctaLabel} accessibilityRole="button">
           <Ionicons name={ctaIcon} size={20} color="#fff" style={styles.ctaIcon} />
           <Text style={styles.ctaText}>{ctaLabel}</Text>
         </TouchableOpacity>
@@ -48,11 +49,9 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: "#fff6ed",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 28,
-    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -61,13 +60,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.text,
     textAlign: "center",
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 15,
-    color: COLORS.subText,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 32,
@@ -76,7 +73,6 @@ const styles = StyleSheet.create({
   cta: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 12,

@@ -1,12 +1,16 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { getUser, unauthorized } from "../_shared/auth.ts";
 
 const EXPO_API_URL = "https://exp.host/--/api/v2/push/send";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
+
+  const user = await getUser(req);
+  if (!user) return unauthorized();
 
   try {
     const { userId, title, body, data } = await req.json();
@@ -14,7 +18,7 @@ serve(async (req) => {
     if (!userId || !title || !body) {
       return new Response(
         JSON.stringify({ error: "userId, title, and body are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -35,7 +39,7 @@ serve(async (req) => {
     if (!Array.isArray(tokens) || tokens.length === 0) {
       return new Response(
         JSON.stringify({ error: "No push token found for user" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 404, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -56,12 +60,12 @@ serve(async (req) => {
     const expoResult = await expoRes.json();
 
     return new Response(JSON.stringify({ success: true, result: expoResult }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     return new Response(
       JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

@@ -10,14 +10,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "../styles/colors";
 
 import LoadingSpinner from "../components/LoadingSpinner";
 import { supabase } from "../services/supabaseClient";
-import { useToast } from "../context/ToastContext";
+import { useApp } from "../hooks/useApp";
 import { analytics } from "../services/analytics";
+import { sanitize } from "../utils/sanitize";
 
 export default function LoginScreen() {
+  const { colors, t } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,8 +27,8 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     setError("");
-    if (!email.trim()) { setError("Please enter your email"); return; }
-    if (!password.trim()) { setError("Please enter your password"); return; }
+    if (!email.trim()) { setError(t("auth.emailRequired")); return; }
+    if (!password.trim()) { setError(t("auth.passwordRequired")); return; }
 
     try {
       setLoading(true);
@@ -45,90 +46,66 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.header}>
-        <Text style={styles.appName}>GoGourmet</Text>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to continue ordering</Text>
+        <Text style={[styles.appName, { color: colors.primary }]}>GoGourmet</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
+        <Text style={[styles.subtitle, { color: colors.subText }]}>Sign in to continue ordering</Text>
       </View>
 
       {error ? (
         <View style={styles.errorBanner}>
           <Ionicons name="alert-circle" size={18} color="#fff" />
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorBannerText}>{error}</Text>
         </View>
       ) : null}
 
-      <View style={styles.inputContainer}>
-        <Ionicons name="mail-outline" size={20} color={COLORS.subText} style={styles.inputIcon} />
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
+      <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <Ionicons name="mail-outline" size={20} color={colors.subText} style={styles.inputIcon} />
+        <TextInput placeholder={t("auth.email")} value={email} onChangeText={(v) => setEmail(sanitize(v))} autoCapitalize="none" keyboardType="email-address" style={[styles.input, { color: colors.text }]} placeholderTextColor={colors.subText} />
       </View>
 
-      <View style={styles.inputContainer}>
-        <Ionicons name="lock-closed-outline" size={20} color={COLORS.subText} style={styles.inputIcon} />
-        <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-          placeholderTextColor="#999"
-        />
+      <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <Ionicons name="lock-closed-outline" size={20} color={colors.subText} style={styles.inputIcon} />
+        <TextInput placeholder={t("auth.password")} value={password} onChangeText={setPassword} secureTextEntry style={[styles.input, { color: colors.text }]} placeholderTextColor={colors.subText} />
       </View>
 
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <LoadingSpinner size="small" color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Login</Text>
-        )}
+      <TouchableOpacity style={[styles.button, { backgroundColor: colors.text }, loading && styles.buttonDisabled]} onPress={handleLogin} disabled={loading}>
+        {loading ? <LoadingSpinner size="small" color="#fff" /> : <Text style={styles.buttonText}>{t("auth.login")}</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/forgot-password")}>
-        <Text style={styles.forgotLink}>Forgot Password?</Text>
+        <Text style={[styles.forgotLink, { color: colors.subText }]}>{t("auth.forgotPassword")}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/signup")}>
-        <Text style={styles.link}>Don't have an account? Sign up</Text>
+        <Text style={[styles.link, { color: colors.primary }]}>{t("auth.noAccount")}</Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 24, justifyContent: "center" },
+  container: { flex: 1, padding: 24, justifyContent: "center" },
   header: { alignItems: "center", marginBottom: 40 },
-  appName: { fontSize: 14, fontWeight: "bold", color: COLORS.primary, letterSpacing: 2, marginBottom: 8 },
+  appName: { fontSize: 14, fontWeight: "bold", letterSpacing: 2, marginBottom: 8 },
   title: { fontSize: 32, fontWeight: "bold" },
-  subtitle: { fontSize: 16, color: COLORS.subText, marginTop: 6 },
+  subtitle: { fontSize: 16, marginTop: 6 },
   errorBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.danger,
+    backgroundColor: "#d32f2f",
     padding: 12,
     borderRadius: 10,
     marginBottom: 16,
     gap: 8,
   },
-  errorText: { color: "#fff", fontSize: 14, flex: 1 },
+  errorBannerText: { color: "#fff", fontSize: 14, flex: 1 },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.card,
     borderRadius: 12,
     paddingHorizontal: 14,
     marginBottom: 14,
@@ -137,7 +114,6 @@ const styles = StyleSheet.create({
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 16 },
   button: {
-    backgroundColor: COLORS.text,
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
@@ -147,6 +123,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.5 },
   buttonText: { color: "#fff", fontSize: 17, fontWeight: "bold" },
-  link: { marginTop: 20, textAlign: "center", color: COLORS.primary, fontSize: 15, fontWeight: "500" },
-  forgotLink: { marginTop: 4, textAlign: "center", color: COLORS.subText, fontSize: 14 },
+  link: { marginTop: 20, textAlign: "center", fontSize: 15, fontWeight: "500" },
+  forgotLink: { marginTop: 4, textAlign: "center", fontSize: 14 },
 });

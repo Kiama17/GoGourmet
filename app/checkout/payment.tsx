@@ -9,15 +9,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "../../styles/colors";
 
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { useNetwork } from "../../context/NetworkContext";
 import { useOrders } from "../../context/OrdersContext";
 import { analytics } from "../../services/analytics";
 import {
   checkMpesaStatus,
   initiateMpesaPayment,
 } from "../../services/mpesa";
+import { useApp } from "../../hooks/useApp";
 
 type PaymentStage = "sending" | "pin" | "processing" | "success" | "failed";
 
@@ -31,7 +32,9 @@ export default function PaymentScreen() {
     name: string;
     address: string;
   }>();
+  const { isConnected } = useNetwork();
   const { placeOrder, updateOrderStatus } = useOrders();
+  const { colors, t } = useApp();
   const [stage, setStage] = useState<PaymentStage>("sending");
   const [errorMsg, setErrorMsg] = useState("");
   const [pollsRemaining, setPollsRemaining] = useState(MAX_POLLS);
@@ -50,12 +53,13 @@ export default function PaymentScreen() {
         useNativeDriver: true,
       }),
     ).start();
+    if (!isConnected) { setStage("failed"); setErrorMsg("No internet connection"); pollingRef.current = false; return; }
     placeOrder({ phone, address, navigateToOrders: false, status: "Pending" }).then((id) => {
       if (id) setOrderId(id);
       initPayment();
     }).catch(() => {
       setStage("failed");
-      setErrorMsg("Failed to create order. Please try again.");
+      setErrorMsg(t("checkout.orderFailed"));
       pollingRef.current = false;
     });
     return () => { cancelledRef.current = true; };
@@ -125,7 +129,7 @@ export default function PaymentScreen() {
     } catch (e) {
       setStage("failed");
       analytics.track("payment_failed", { error: (e as Error).message, amount });
-      setErrorMsg("Something went wrong. Please try again.");
+      setErrorMsg(t("common.error"));
       pollingRef.current = false;
     }
   };
@@ -147,33 +151,33 @@ export default function PaymentScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {stage === "sending" && (
           <>
             <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]}>
-              <Ionicons name="sync" size={64} color={COLORS.primary} />
+              <Ionicons name="sync" size={64} color={colors.primary} />
             </Animated.View>
-            <Text style={styles.title}>Sending Request</Text>
-            <Text style={styles.subtitle}>
-              Initiating M-Pesa STK Push to {phone}
+            <Text style={[styles.title, { color: colors.text }]}>{t("checkout.payment.sending")}</Text>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>
+              {t("checkout.payment.initiating", { phone })}
             </Text>
-            <Text style={styles.amount}>KES {amount}</Text>
+            <Text style={[styles.amount, { color: colors.primary }]}>KES {amount}</Text>
           </>
         )}
 
         {stage === "pin" && (
           <>
-            <View style={styles.iconWrapper}>
-              <Ionicons name="phone-portrait-outline" size={64} color={COLORS.primary} />
+            <View style={[styles.iconWrapper, { backgroundColor: colors.card }]}>
+              <Ionicons name="phone-portrait-outline" size={64} color={colors.primary} />
             </View>
-            <Text style={styles.title}>Check Your Phone</Text>
-            <Text style={styles.subtitle}>
-              Enter your M-Pesa PIN on the STK Push prompt sent to {phone}
+            <Text style={[styles.title, { color: colors.text }]}>{t("checkout.payment.checkPhone")}</Text>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>
+              {t("checkout.payment.pinPrompt", { phone })}
             </Text>
             <LoadingSpinner size="small" />
-            <Text style={styles.hint}>
-              Waiting for confirmation{pollsRemaining < MAX_POLLS ? ` (${pollsRemaining}s timeout)` : ""}...
+            <Text style={[styles.hint, { color: colors.subText }]}>
+              {t("checkout.payment.waiting")}{pollsRemaining < MAX_POLLS ? ` (${pollsRemaining}s timeout)` : ""}
             </Text>
           </>
         )}
@@ -181,14 +185,14 @@ export default function PaymentScreen() {
         {stage === "processing" && (
           <>
             <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]}>
-              <Ionicons name="sync" size={64} color={COLORS.primary} />
+              <Ionicons name="sync" size={64} color={colors.primary} />
             </Animated.View>
-            <Text style={styles.title}>Confirming Payment</Text>
-            <Text style={styles.subtitle}>
-              Please wait while we confirm with M-Pesa
+            <Text style={[styles.title, { color: colors.text }]}>{t("checkout.payment.confirming")}</Text>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>
+              {t("checkout.payment.waiting")}
             </Text>
             {pollsRemaining > 0 && (
-              <Text style={styles.hint}>
+              <Text style={[styles.hint, { color: colors.subText }]}>
                 Checking... {pollsRemaining} attempt{pollsRemaining !== 1 ? "s" : ""} remaining
               </Text>
             )}
@@ -198,28 +202,28 @@ export default function PaymentScreen() {
         {stage === "success" && (
           <>
             <View style={[styles.iconWrapper, styles.successIcon]}>
-              <Ionicons name="checkmark-circle" size={80} color={COLORS.success} />
+              <Ionicons name="checkmark-circle" size={80} color={colors.success} />
             </View>
-            <Text style={styles.title}>Payment Successful!</Text>
-            <Text style={styles.subtitle}>Redirecting to your orders...</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{t("checkout.payment.success")}</Text>
+            <Text style={[styles.subtitle, { color: colors.subText }]}>{t("checkout.payment.redirecting")}</Text>
           </>
         )}
 
         {stage === "failed" && (
           <>
             <View style={[styles.iconWrapper, styles.failedIcon]}>
-              <Ionicons name="close-circle" size={80} color={COLORS.danger} />
+              <Ionicons name="close-circle" size={80} color={colors.danger} />
             </View>
-            <Text style={styles.title}>Payment Failed</Text>
-            <Text style={styles.errorText}>
-              {errorMsg || "We couldn't confirm your payment. You can try again or cancel."}
+            <Text style={[styles.title, { color: colors.text }]}>{t("checkout.payment.failed")}</Text>
+            <Text style={[styles.errorText, { color: colors.danger }]}>
+              {errorMsg || t("common.error")}
             </Text>
-            <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.primary }]} onPress={handleRetry} accessibilityLabel={t("checkout.payment.retry")} accessibilityRole="button">
               <Ionicons name="refresh-outline" size={18} color="#fff" />
-              <Text style={styles.buttonText}>Try Again</Text>
+              <Text style={styles.buttonText}>{t("checkout.payment.retry")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel Order</Text>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel} accessibilityLabel={t("checkout.payment.cancel")} accessibilityRole="button">
+              <Text style={[styles.cancelButtonText, { color: colors.subText }]}>{t("checkout.payment.cancel")}</Text>
             </TouchableOpacity>
           </>
         )}
@@ -231,7 +235,6 @@ export default function PaymentScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     padding: 30,
@@ -242,7 +245,6 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#f8f8f8",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
@@ -257,7 +259,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: COLORS.subText,
     textAlign: "center",
     lineHeight: 24,
     marginBottom: 8,
@@ -266,18 +267,15 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 32,
     fontWeight: "bold",
-    color: COLORS.primary,
     marginTop: 12,
   },
   hint: {
     fontSize: 14,
-    color: COLORS.subText,
     marginTop: 12,
     fontStyle: "italic",
   },
   errorText: {
     fontSize: 15,
-    color: COLORS.danger,
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 22,
@@ -287,7 +285,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: COLORS.primary,
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -301,5 +298,5 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-  cancelButtonText: { color: COLORS.subText, fontSize: 16, fontWeight: "500" },
+  cancelButtonText: { fontSize: 16, fontWeight: "500" },
 });

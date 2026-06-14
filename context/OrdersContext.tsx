@@ -24,13 +24,16 @@ type Order = {
   user_id: string;
 };
 
+type PlaceOrderDetails = { address?: string; phone?: string; navigateToOrders?: boolean; status?: string };
+
 type OrdersContextType = {
   orders: Order[];
-  placeOrder: (details?: { address?: string; phone?: string; navigateToOrders?: boolean; status?: string }) => Promise<string | void>;
+  placeOrder: (details?: PlaceOrderDetails) => Promise<string | void>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
   fetchOrders: () => Promise<void>;
   loading: boolean;
+  error: string | null;
 };
 
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
@@ -38,6 +41,7 @@ const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 export const OrdersProvider = ({ children }: { children: ReactNode }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { cartItems, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
@@ -156,6 +160,7 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
+      setError(null);
       if (!user) return;
 
       const { data, error } = await supabase
@@ -166,8 +171,9 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
       setOrders((data as Order[]) || []);
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
+    } catch (err) {
+      setError("Failed to load orders");
+      console.error("Failed to fetch orders:", err);
     } finally {
       setLoading(false);
     }
@@ -175,7 +181,7 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
 
   return (
       <OrdersContext.Provider
-        value={{ orders, placeOrder, updateOrderStatus, cancelOrder, fetchOrders, loading }}
+        value={{ orders, placeOrder, updateOrderStatus, cancelOrder, fetchOrders, loading, error }}
       >
       {children}
     </OrdersContext.Provider>

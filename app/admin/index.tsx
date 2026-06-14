@@ -1,14 +1,17 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../styles/colors";
 
 import ErrorMessage from "../../components/ErrorMessage";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { getDashboardStats, DashboardStats } from "../../services/admin";
 
-const statCards: { key: string; label: string; icon: any; color: string; prefix?: string }[] = [
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
+type StatCardKey = "totalOrders" | "totalRevenue" | "totalUsers" | "totalMenuItems";
+
+const statCards: { key: StatCardKey; label: string; icon: IconName; color: string; prefix?: string }[] = [
   { key: "totalOrders", label: "Total Orders", icon: "receipt-outline", color: "#4a90d9" },
   { key: "totalRevenue", label: "Revenue", icon: "cash-outline", color: "#28a745", prefix: "KES " },
   { key: "totalUsers", label: "Users", icon: "people-outline", color: "#ff6b00" },
@@ -50,13 +53,13 @@ export default function AdminDashboardScreen() {
 
       <View style={styles.statsGrid}>
         {statCards.map((card) => {
-          const value = stats ? (stats as any)[card.key] : 0;
+          const value = stats ? stats[card.key] : 0;
           const display = card.key === "totalRevenue"
             ? `${card.prefix || ""}${value.toLocaleString()}`
             : `${card.prefix || ""}${value}`;
           return (
             <View key={card.key} style={[styles.statCard, { borderLeftColor: card.color }]}>
-              <Ionicons name={card.icon as any} size={28} color={card.color} />
+              <Ionicons name={card.icon} size={28} color={card.color} />
               <Text style={styles.statValue}>{display}</Text>
               <Text style={styles.statLabel}>{card.label}</Text>
             </View>

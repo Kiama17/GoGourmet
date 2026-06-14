@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { captureException } from "@sentry/react-native";
-import { COLORS } from "../styles/colors";
+import { ThemeContext } from "../context/ThemeContext";
 
 type ErrorBoundaryProps = {
   children: React.ReactNode;
@@ -37,19 +37,26 @@ export default class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <View style={styles.container}>
-          <View style={styles.iconWrapper}>
-            <Ionicons name="bug-outline" size={56} color={COLORS.danger} />
-          </View>
-          <Text style={styles.title}>Unexpected Error</Text>
-          <Text style={styles.message}>
-            {this.state.error?.message || "An unexpected error occurred"}
-          </Text>
-          <TouchableOpacity style={styles.button} onPress={this.handleReset} activeOpacity={0.85}>
-            <Ionicons name="refresh-outline" size={18} color="#fff" />
-            <Text style={styles.buttonText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <ThemeContext.Consumer>
+          {(ctx) => {
+            const c = ctx?.colors ?? { background: "#fff", card: "#f5f5f5", text: "#000", subText: "#666", primary: "#E3731E", danger: "#dc3545" } as any;
+            return (
+              <View style={[styles.container, { backgroundColor: c.background }]}>
+                <View style={styles.iconWrapper}>
+                  <Ionicons name="bug-outline" size={56} color={c.danger} />
+                </View>
+                <Text style={[styles.title, { color: c.text }]}>Unexpected Error</Text>
+                <Text style={[styles.message, { color: c.subText }]}>
+                  {this.state.error?.message || "An unexpected error occurred"}
+                </Text>
+                <TouchableOpacity style={[styles.button, { backgroundColor: c.primary }]} onPress={this.handleReset} activeOpacity={0.85}>
+                  <Ionicons name="refresh-outline" size={18} color="#fff" />
+                  <Text style={styles.buttonText}>Try Again</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          }}
+        </ThemeContext.Consumer>
       );
     }
 
@@ -77,13 +84,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.text,
     textAlign: "center",
     marginBottom: 8,
   },
   message: {
     fontSize: 15,
-    color: COLORS.subText,
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 32,
@@ -92,7 +97,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: COLORS.primary,
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 12,

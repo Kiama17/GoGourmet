@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { COLORS } from "../../styles/colors";
 
 import EmptyState from "../../components/EmptyState";
 import ErrorMessage from "../../components/ErrorMessage";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useCart } from "../../context/CartContext";
+import { useApp } from "../../hooks/useApp";
 
 type CartItemRowProps = {
   item: {
@@ -33,24 +33,25 @@ const CartItemRow = memo(function CartItemRow({
   onIncrease,
   onDecrease,
 }: CartItemRowProps) {
+  const { colors } = useApp();
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.card }]}>
       <Image source={{ uri: item.image }} style={styles.image} />
       <View style={styles.info}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.price}>KES {item.price}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
+        <Text style={[styles.price, { color: colors.primary }]}>KES {item.price}</Text>
         <View style={styles.quantityContainer}>
           <TouchableOpacity
-            style={styles.qtyButton}
+            style={[styles.qtyButton, { backgroundColor: colors.text }]}
             onPress={() => onDecrease(item.id)}
             accessibilityLabel={`Decrease quantity of ${item.name}`}
             accessibilityRole="button"
           >
             <Ionicons name="remove" size={18} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.quantity}>{item.quantity}</Text>
+          <Text style={[styles.quantity, { color: colors.text }]}>{item.quantity}</Text>
           <TouchableOpacity
-            style={styles.qtyButton}
+            style={[styles.qtyButton, { backgroundColor: colors.text }]}
             onPress={() => onIncrease(item.id)}
             accessibilityLabel={`Increase quantity of ${item.name}`}
             accessibilityRole="button"
@@ -59,7 +60,7 @@ const CartItemRow = memo(function CartItemRow({
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.itemTotal}>KES {item.price * item.quantity}</Text>
+      <Text style={[styles.itemTotal, { color: colors.text }]}>KES {item.price * item.quantity}</Text>
     </View>
   );
 });
@@ -74,6 +75,7 @@ export default function CartScreen() {
     error,
     clearError,
   } = useCart();
+  const { colors, t } = useApp();
   const router = useRouter();
 
   const handleIncrease = useCallback(
@@ -106,18 +108,18 @@ export default function CartScreen() {
   }
 
   if (error) {
-    return <ErrorMessage message={error} onDismiss={clearError} />;
+    return <ErrorMessage message={error} onDismiss={clearError} onRetry={clearError} />;
   }
 
   if (cartItems.length === 0) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>My Cart</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.title, { color: colors.text }]}>{t("cart.title")}</Text>
         <EmptyState
           icon="cart-outline"
-          title="Your cart is empty"
+          title={t("cart.empty")}
           subtitle="Browse our menu and add items you'd love to eat"
-          ctaLabel="Browse Food"
+          ctaLabel={t("cart.browse")}
           onCtaPress={() => router.push("/(tabs)/home")}
         />
       </View>
@@ -125,9 +127,9 @@ export default function CartScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>My Cart</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>{t("cart.title")}</Text>
+      <Text style={[styles.subtitle, { color: colors.subText }]}>
         {cartItems.length} item{cartItems.length > 1 ? "s" : ""}
       </Text>
 
@@ -141,18 +143,18 @@ export default function CartScreen() {
         maxToRenderPerBatch={6}
       />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: colors.border }]}>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.total}>KES {itemTotal}</Text>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
+          <Text style={[styles.total, { color: colors.primary }]}>KES {itemTotal}</Text>
         </View>
         <TouchableOpacity
-          style={styles.checkoutButton}
+          style={[styles.checkoutButton, { backgroundColor: colors.text }]}
           onPress={() => router.push("/checkout")}
-          accessibilityLabel="Proceed to checkout"
+          accessibilityLabel={t("cart.proceed")}
           accessibilityRole="button"
         >
-          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+          <Text style={styles.checkoutButtonText}>{t("cart.proceed")}</Text>
           <Ionicons name="arrow-forward" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -164,13 +166,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
     padding: 30,
   },
   errorTitle: {
@@ -181,12 +181,10 @@ const styles = StyleSheet.create({
   },
   errorSubtitle: {
     fontSize: 15,
-    color: COLORS.subText,
     textAlign: "center",
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: COLORS.danger,
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,
@@ -203,13 +201,11 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: COLORS.subText,
     marginBottom: 20,
   },
   card: {
     flexDirection: "row",
     marginBottom: 15,
-    backgroundColor: COLORS.card,
     borderRadius: 14,
     padding: 12,
     alignItems: "center",
@@ -229,7 +225,6 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 15,
-    color: COLORS.primary,
     fontWeight: "600",
     marginTop: 4,
   },
@@ -239,7 +234,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   qtyButton: {
-    backgroundColor: COLORS.text,
     width: 32,
     height: 32,
     justifyContent: "center",
@@ -256,13 +250,11 @@ const styles = StyleSheet.create({
   itemTotal: {
     fontSize: 16,
     fontWeight: "bold",
-    color: COLORS.text,
     marginLeft: 8,
   },
   footer: {
     marginTop: 16,
     borderTopWidth: 1,
-    borderColor: COLORS.border,
     paddingTop: 16,
     gap: 14,
   },
@@ -278,10 +270,8 @@ const styles = StyleSheet.create({
   total: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.primary,
   },
   checkoutButton: {
-    backgroundColor: COLORS.text,
     padding: 16,
     borderRadius: 14,
     flexDirection: "row",

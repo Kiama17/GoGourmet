@@ -2,9 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { COLORS } from "../../styles/colors";
+import { useApp } from "../../hooks/useApp";
 
 export default function SuccessScreen() {
+  const { colors, t } = useApp();
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -24,30 +25,30 @@ export default function SuccessScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View style={[styles.iconWrapper, { transform: [{ scale: scaleAnim }] }]}>
-        <Ionicons name="checkmark-circle" size={100} color={COLORS.success} />
+        <Ionicons name="checkmark-circle" size={100} color={colors.success} />
       </Animated.View>
 
       <Animated.View style={{ opacity: fadeAnim, alignItems: "center" }}>
-        <Text style={styles.title}>Order Placed!</Text>
-        <Text style={styles.message}>
-          Your food is being prepared and will arrive soon.
+        <Text style={[styles.title, { color: colors.text }]}>{t("checkout.success.title")}</Text>
+        <Text style={[styles.message, { color: colors.subText }]}>
+          {t("checkout.success.message")}
         </Text>
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={() => router.replace("/(tabs)/orders")}
         >
           <Ionicons name="receipt-outline" size={20} color="#fff" />
-          <Text style={styles.buttonText}>Track Order</Text>
+          <Text style={styles.buttonText}>{t("checkout.success.track")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.secondaryButton}
+          style={[styles.secondaryButton, { backgroundColor: colors.card }]}
           onPress={() => router.replace("/(tabs)/home")}
         >
-          <Text style={styles.secondaryButtonText}>Back to Home</Text>
+          <Text style={[styles.secondaryButtonText, { color: colors.text }]}>{t("checkout.success.home")}</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -57,7 +58,6 @@ export default function SuccessScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     padding: 30,
@@ -74,7 +74,6 @@ const styles = StyleSheet.create({
   message: {
     fontSize: 17,
     textAlign: "center",
-    color: COLORS.subText,
     lineHeight: 26,
     marginBottom: 40,
     paddingHorizontal: 20,
@@ -83,7 +82,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 14,
@@ -101,10 +99,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     width: "100%",
     alignItems: "center",
-    backgroundColor: COLORS.card,
   },
   secondaryButtonText: {
-    color: COLORS.text,
     fontSize: 16,
     fontWeight: "600",
   },

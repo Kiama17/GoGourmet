@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "skills": {
+    "accelerated-computing-cudf": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/accelerated-computing-cudf/SKILL.md",
+      "computedHash": "e8c8317277bb7f02666c37a9a39dcdc37131733ec2528a81ccf20f31efcdbfe0"
+    },
+    "aiq-deploy": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/aiq-deploy/SKILL.md",
+      "computedHash": "d3b5cf955e192a4247857a6456cd7311d4344b163415ee3f7c7ffe4196d83116"
+    },
+    "aiq-research": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/aiq-research/SKILL.md",
+      "computedHash": "495df85554e7899a03a95ef7467d841d77ca2ca87941bf53c83a0b15699bef4d"
+    },
+    "cudaq-guide": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cudaq-guide/SKILL.md",
+      "computedHash": "4cb53dbdbda8dafd9fd16b93eec74223920c6d2fb386f0255236ae830a2d2557"
+    },
+    "cuopt-developer": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cuopt-developer/SKILL.md",
+      "computedHash": "6b34db61bac041f1c7901003d9e5efa31b6d05f47c2f84d468a107dbb8dc7ce0"
+    },
+    "cuopt-user-rules": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/cuopt-user-rules/SKILL.md",
+      "computedHash": "38634f426a12f34f6ddf6f6dc6087eda3963ea48aa64703f9493d9b1547ab77a"
+    },
+    "data-designer": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/data-designer/SKILL.md",
+      "computedHash": "a5998c8ebe66ca88184fd409e34fb3721778c4a7ab4c8ae9753de12f6151080e"
+    },
+    "dynamo-recipe-runner": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/dynamo-recipe-runner/SKILL.md",
+      "computedHash": "3a665e6b8db08daa9ecb58e9d6ae09a88690fcd1e7018b87a66188b35cde455f"
+    },
+    "dynamo-router-starter": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/dynamo-router-starter/SKILL.md",
+      "computedHash": "e2b2e2d9e7150d7bfee8d9efc03a17b31fcb8580fe2dec1720e9539e32c1d1f5"
+    },
+    "dynamo-troubleshoot": {
+      "source": "NVIDIA/skills",
+      "sourceType": "github",
+      "skillPath": "skills/dynamo-troubleshoot/SKILL.md",
+      "computedHash": "f29880b5e5849aa9633b68d88135d20a0e353d4fd39a3c6f31f8beef80b1c1ba"
+    }
+  }
+}

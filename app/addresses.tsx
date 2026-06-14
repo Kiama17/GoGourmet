@@ -15,45 +15,42 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { COLORS } from "../styles/colors";
 
 import EmptyState from "../components/EmptyState";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { SavedAddress, useAddresses } from "../context/AddressContext";
+import { useApp } from "../hooks/useApp";
+import { sanitize } from "../utils/sanitize";
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: { flex: 1, padding: 20 },
   title: { fontSize: 30, fontWeight: "bold", marginBottom: 20 },
   list: { paddingBottom: 20 },
   card: {
-    backgroundColor: COLORS.card,
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "transparent",
   },
-  defaultCard: { borderColor: COLORS.primary },
   cardHeader: { marginBottom: 8 },
   labelRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   label: { fontSize: 16, fontWeight: "bold" },
   defaultBadge: {
-    backgroundColor: COLORS.primary + "20",
     paddingVertical: 2,
     paddingHorizontal: 8,
     borderRadius: 8,
   },
-  defaultText: { fontSize: 11, color: COLORS.primary, fontWeight: "600" },
-  address: { fontSize: 14, color: COLORS.subText, lineHeight: 20, marginTop: 4 },
+  defaultText: { fontSize: 11, fontWeight: "600" },
+  address: { fontSize: 14, lineHeight: 20, marginTop: 4 },
   cardActions: { flexDirection: "row", gap: 16, marginTop: 12 },
   actionBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  actionText: { fontSize: 13, color: COLORS.primary, fontWeight: "500" },
+  actionText: { fontSize: 13, fontWeight: "500" },
   addButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: COLORS.primary,
     padding: 16,
     borderRadius: 14,
     marginTop: 16,
@@ -65,7 +62,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -79,19 +75,16 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 22, fontWeight: "bold" },
   modalBody: { paddingVertical: 12 },
-  modalSubtitle: { fontSize: 14, color: COLORS.subText, marginBottom: 16 },
+  modalSubtitle: { fontSize: 14, marginBottom: 16 },
   tagContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 12 },
   tagButton: {
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 20,
-    backgroundColor: COLORS.card,
   },
-  tagButtonActive: { backgroundColor: COLORS.primary },
-  tagText: { fontSize: 14, fontWeight: "500", color: COLORS.text },
+  tagText: { fontSize: 14, fontWeight: "500" },
   tagTextActive: { color: "#fff" },
   modalInput: {
-    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
@@ -101,14 +94,13 @@ const styles = StyleSheet.create({
   addressPreviewContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 12,
     gap: 8,
     marginBottom: 16,
   },
   addressPreviewIcon: { marginTop: 2 },
-  addressPreviewText: { flex: 1, fontSize: 14, color: COLORS.text, lineHeight: 20 },
+  addressPreviewText: { flex: 1, fontSize: 14, lineHeight: 20 },
   switchRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -116,44 +108,43 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   switchLabel: { fontSize: 16, fontWeight: "600" },
-  switchSubtitle: { fontSize: 13, color: COLORS.subText, marginTop: 2 },
+  switchSubtitle: { fontSize: 13, marginTop: 2 },
   modalActions: { flexDirection: "row", gap: 12, marginTop: 16 },
   modalBtn: { flex: 1, padding: 16, borderRadius: 12, alignItems: "center" },
-  modalCancelBtn: { backgroundColor: COLORS.card },
-  modalCancelBtnText: { fontSize: 16, fontWeight: "600", color: COLORS.text },
-  modalSaveBtn: { backgroundColor: COLORS.primary },
+  modalCancelBtnText: { fontSize: 16, fontWeight: "600" },
   modalSaveBtnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
   modalBtnDisabled: { opacity: 0.5 },
 });
 
-const AddressCard = ({ item, onSetDefault, onDelete }: {
+const AddressCard = ({ item, onSetDefault, onDelete, colors }: {
   item: SavedAddress;
   onSetDefault: (id: string) => void;
   onDelete: (id: string) => void;
+  colors: any;
 }) => (
-  <View style={[styles.card, item.is_default && styles.defaultCard]}>
+  <View style={[styles.card, { backgroundColor: colors.card }, item.is_default && { borderColor: colors.primary }]}>
     <View style={styles.cardHeader}>
       <View style={styles.labelRow}>
-        <Ionicons name="location" size={18} color={COLORS.primary} />
-        <Text style={styles.label}>{item.label}</Text>
+        <Ionicons name="location" size={18} color={colors.primary} />
+        <Text style={[styles.label, { color: colors.text }]}>{item.label}</Text>
         {item.is_default && (
-          <View style={styles.defaultBadge}>
-            <Text style={styles.defaultText}>Default</Text>
+          <View style={[styles.defaultBadge, { backgroundColor: colors.primary + "20" }]}>
+            <Text style={[styles.defaultText, { color: colors.primary }]}>Default</Text>
           </View>
         )}
       </View>
     </View>
-    <Text style={styles.address}>{item.address}</Text>
+    <Text style={[styles.address, { color: colors.subText }]}>{item.address}</Text>
     <View style={styles.cardActions}>
       {!item.is_default && (
         <TouchableOpacity style={styles.actionBtn} onPress={() => onSetDefault(item.id)}>
-          <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.primary} />
-          <Text style={styles.actionText}>Set Default</Text>
+          <Ionicons name="checkmark-circle-outline" size={18} color={colors.primary} />
+          <Text style={[styles.actionText, { color: colors.primary }]}>Set Default</Text>
         </TouchableOpacity>
       )}
       <TouchableOpacity style={styles.actionBtn} onPress={() => onDelete(item.id)}>
-        <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
-        <Text style={[styles.actionText, { color: COLORS.danger }]}>Delete</Text>
+        <Ionicons name="trash-outline" size={18} color={colors.danger} />
+        <Text style={[styles.actionText, { color: colors.danger }]}>Delete</Text>
       </TouchableOpacity>
     </View>
   </View>
@@ -161,6 +152,7 @@ const AddressCard = ({ item, onSetDefault, onDelete }: {
 
 export default function AddressesScreen() {
   const { addresses, loading, setDefault, deleteAddress, saveAddress } = useAddresses();
+  const { colors, t } = useApp();
   const router = useRouter();
   const { pickedAddress, pickedLat, pickedLng } = useLocalSearchParams<{
     pickedAddress?: string;
@@ -193,7 +185,7 @@ export default function AddressesScreen() {
     const lat = parseFloat(pickedLat);
     const lng = parseFloat(pickedLng);
     if (isNaN(lat) || isNaN(lng)) {
-      Alert.alert("Error", "Invalid location coordinates. Please try again.");
+      Alert.alert(t("common.error"), "Invalid location coordinates. Please try again.");
       router.replace("/addresses");
       return;
     }
@@ -211,32 +203,31 @@ export default function AddressesScreen() {
     try {
       await setDefault(id);
     } catch {
-      Alert.alert("Error", "Failed to set default address");
+      Alert.alert(t("common.error"), t("common.retry"));
     }
   }, [setDefault]);
 
   const handleDelete = useCallback((id: string) => {
     Alert.alert("Delete Address", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
-          // ✅ Fix 5: Await and catch delete errors
           try {
             await deleteAddress(id);
           } catch {
-            Alert.alert("Error", "Failed to delete address. Please try again.");
+            Alert.alert(t("common.error"), t("common.retry"));
           }
         },
       },
     ]);
-  }, [deleteAddress]);
+  }, [deleteAddress, t]);
 
   const handleSaveAddress = async () => {
     if (!pendingAddress) return;
     if (!label.trim()) {
-      Alert.alert("Validation Error", "Please enter a label for this address.");
+      Alert.alert(t("common.error"), t("common.retry"));
       return;
     }
     setSaving(true);
@@ -251,7 +242,7 @@ export default function AddressesScreen() {
       setModalVisible(false);
       setPendingAddress(null);
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to save address");
+      Alert.alert(t("common.error"), err.message || t("common.retry"));
     } finally {
       setSaving(false);
     }
@@ -265,32 +256,32 @@ export default function AddressesScreen() {
   if (loading && !modalVisible) return <LoadingSpinner fullScreen skeleton="addresses" />;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Delivery Addresses</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>{t("address.title")}</Text>
 
       {addresses.length === 0 ? (
         <EmptyState
           icon="location-outline"
-          title="No saved addresses"
-          subtitle="Add your first delivery address"
+          title={t("address.empty")}
+          subtitle={t("address.emptySubtitle")}
         />
       ) : (
         <FlatList
           data={addresses}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <AddressCard item={item} onSetDefault={handleSetDefault} onDelete={handleDelete} />
+            <AddressCard item={item} onSetDefault={handleSetDefault} onDelete={handleDelete} colors={colors} />
           )}
           contentContainerStyle={styles.list}
         />
       )}
 
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, { backgroundColor: colors.primary }]}
         onPress={() => router.push({ pathname: "/address-picker", params: { returnTo: "/addresses" } })}
       >
         <Ionicons name="add" size={20} color="#fff" />
-        <Text style={styles.addText}>Add New Address</Text>
+        <Text style={styles.addText}>{t("address.title")}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -303,25 +294,25 @@ export default function AddressesScreen() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Save Address</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Save Address</Text>
               <TouchableOpacity onPress={handleCancel}>
-                <Ionicons name="close" size={24} color={COLORS.text} />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <ScrollView contentContainerStyle={styles.modalBody} keyboardShouldPersistTaps="handled">
-              <Text style={styles.modalSubtitle}>Give this address a label to find it easily</Text>
+              <Text style={[styles.modalSubtitle, { color: colors.subText }]}>Give this address a label to find it easily</Text>
 
               <View style={styles.tagContainer}>
-                {["Home", "Work", "Office", "Gym"].map((tag) => (
+                {[t("address.home"), t("address.work"), t("address.office"), t("address.gym")].map((tag) => (
                   <TouchableOpacity
                     key={tag}
-                    style={[styles.tagButton, label === tag && styles.tagButtonActive]}
+                    style={[styles.tagButton, { backgroundColor: colors.card }, label === tag && { backgroundColor: colors.primary }]}
                     onPress={() => setLabel(tag)}
                   >
-                    <Text style={[styles.tagText, label === tag && styles.tagTextActive]}>
+                    <Text style={[styles.tagText, { color: colors.text }, label === tag && styles.tagTextActive]}>
                       {tag}
                     </Text>
                   </TouchableOpacity>
@@ -329,47 +320,46 @@ export default function AddressesScreen() {
               </View>
 
               <TextInput
-                style={styles.modalInput}
+                style={[styles.modalInput, { backgroundColor: colors.card, color: colors.text }]}
                 placeholder="Or type a custom label..."
-                placeholderTextColor="#999"
+                placeholderTextColor={colors.subText}
                 value={label}
-                onChangeText={setLabel}
+                onChangeText={(v) => setLabel(sanitize(v))}
                 maxLength={20}
               />
 
-              <Text style={styles.addressLabel}>Selected Location</Text>
-              <View style={styles.addressPreviewContainer}>
-                <Ionicons name="map-outline" size={18} color={COLORS.primary} style={styles.addressPreviewIcon} />
-                {/* ✅ Fix 6: Fallback if address is missing */}
-                <Text style={styles.addressPreviewText}>
-                  {pendingAddress?.address || "No address selected"}
+              <Text style={[styles.addressLabel, { color: colors.text }]}>Selected Location</Text>
+              <View style={[styles.addressPreviewContainer, { backgroundColor: colors.card }]}>
+                <Ionicons name="map-outline" size={18} color={colors.primary} style={styles.addressPreviewIcon} />
+                <Text style={[styles.addressPreviewText, { color: colors.text }]}>
+                  {pendingAddress?.address || t("common.noAddressSelected")}
                 </Text>
               </View>
 
               <View style={styles.switchRow}>
                 <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.switchLabel}>Set as Default</Text>
-                  <Text style={styles.switchSubtitle}>Use this address as your primary delivery option</Text>
+                  <Text style={[styles.switchLabel, { color: colors.text }]}>Set as Default</Text>
+                  <Text style={[styles.switchSubtitle, { color: colors.subText }]}>Use this address as your primary delivery option</Text>
                 </View>
                 <Switch
                   value={isDefault}
                   onValueChange={setIsDefault}
-                  trackColor={{ false: "#ddd", true: COLORS.secondary }}
-                  thumbColor={isDefault ? COLORS.primary : "#f4f3f4"}
+                  trackColor={{ false: "#ddd", true: colors.secondary }}
+                  thumbColor={isDefault ? colors.primary : "#f4f3f4"}
                 />
               </View>
             </ScrollView>
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={[styles.modalBtn, styles.modalCancelBtn]}
+                style={[styles.modalBtn, { backgroundColor: colors.card }]}
                 onPress={handleCancel}
                 disabled={saving}
               >
-                <Text style={styles.modalCancelBtnText}>Cancel</Text>
+                <Text style={[styles.modalCancelBtnText, { color: colors.text }]}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalBtn, styles.modalSaveBtn, saving && styles.modalBtnDisabled]}
+                style={[styles.modalBtn, { backgroundColor: colors.primary }, saving && styles.modalBtnDisabled]}
                 onPress={handleSaveAddress}
                 disabled={saving}
               >

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { COLORS } from "../styles/colors";
+import { useApp } from "../hooks/useApp";
 
 export type PaymentMethod = "cod" | "mpesa";
 
@@ -32,23 +32,24 @@ const methods: {
 ];
 
 export default function PaymentMethodSelector({ selected, onSelect, total }: Props) {
+  const { colors } = useApp();
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Payment Method</Text>
+      <Text style={[styles.title, { color: colors.text }]}>Payment Method</Text>
       {methods.map((method) => (
         <TouchableOpacity
           key={method.key}
-          style={[styles.card, selected === method.key && styles.selectedCard]}
+          style={[styles.card, { backgroundColor: colors.card }, selected === method.key && { borderColor: colors.primary, backgroundColor: colors.primary + "15" }]}
           onPress={() => onSelect(method.key)}
           activeOpacity={0.7}
         >
-          <View style={styles.radioOuter}>
-            {selected === method.key && <View style={styles.radioInner} />}
+          <View style={[styles.radioOuter, { borderColor: colors.primary }]}>
+            {selected === method.key && <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />}
           </View>
-          <Ionicons name={method.icon} size={24} color={COLORS.primary} />
+          <Ionicons name={method.icon} size={24} color={colors.primary} />
           <View style={styles.info}>
-            <Text style={styles.label}>{method.label}</Text>
-            <Text style={styles.description}>{method.description}</Text>
+            <Text style={[styles.label, { color: colors.text }]}>{method.label}</Text>
+            <Text style={[styles.description, { color: colors.subText }]}>{method.description}</Text>
           </View>
         </TouchableOpacity>
       ))}
@@ -62,7 +63,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.card,
     borderRadius: 14,
     padding: 16,
     marginBottom: 10,
@@ -70,16 +70,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "transparent",
   },
-  selectedCard: {
-    borderColor: COLORS.primary,
-    backgroundColor: "#fff6e5",
-  },
   radioOuter: {
     width: 22,
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -87,9 +82,8 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: COLORS.primary,
   },
   info: { flex: 1 },
   label: { fontSize: 16, fontWeight: "600" },
-  description: { fontSize: 13, color: COLORS.subText, marginTop: 2 },
+  description: { fontSize: 13, marginTop: 2 },
 });

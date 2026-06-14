@@ -5,7 +5,7 @@ const GOOGLE_MAPS_API_KEY =
   (Constants.expoConfig as any)?.extra?.googleMapsApiKey ||
   "";
 
-if (!GOOGLE_MAPS_API_KEY) {
+if (!GOOGLE_MAPS_API_KEY && __DEV__) {
   console.warn("Google Maps API key not found in app config");
 }
 
@@ -33,7 +33,7 @@ export async function fetchPlaceAutocomplete(input: string): Promise<PlacePredic
   const response = await fetch(url);
   const data = await response.json();
   if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-    console.warn("Places autocomplete error:", data.status, data.error_message);
+    if (__DEV__) console.warn("Places autocomplete error:", data.status, data.error_message);
     return [];
   }
   return (data.predictions || []).map((p: any) => ({

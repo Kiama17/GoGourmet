@@ -1,25 +1,30 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import React from "react";
+import { ThemeProvider } from "../../context/ThemeContext";
 import EmptyState from "../EmptyState";
+
+function renderWithProviders(ui: React.ReactElement) {
+  return render(<ThemeProvider>{ui}</ThemeProvider>);
+}
 
 describe("EmptyState", () => {
   it("renders title", () => {
-    render(<EmptyState title="Nothing here" />);
+    renderWithProviders(<EmptyState title="Nothing here" />);
     expect(screen.getByText("Nothing here")).toBeTruthy();
   });
 
   it("renders subtitle when provided", () => {
-    render(<EmptyState title="Empty" subtitle="Add some items" />);
+    renderWithProviders(<EmptyState title="Empty" subtitle="Add some items" />);
     expect(screen.getByText("Add some items")).toBeTruthy();
   });
 
   it("does not render subtitle when not provided", () => {
-    render(<EmptyState title="Empty" />);
+    renderWithProviders(<EmptyState title="Empty" />);
     expect(screen.queryByText("Add some items")).toBeNull();
   });
 
   it("renders CTA button when label and handler provided", () => {
-    render(
+    renderWithProviders(
       <EmptyState
         title="Empty"
         ctaLabel="Browse Food"
@@ -30,18 +35,18 @@ describe("EmptyState", () => {
   });
 
   it("does not render CTA when label missing", () => {
-    render(<EmptyState title="Empty" onCtaPress={() => {}} />);
+    renderWithProviders(<EmptyState title="Empty" onCtaPress={() => {}} />);
     expect(screen.queryByText("Browse Food")).toBeNull();
   });
 
   it("does not render CTA when handler missing", () => {
-    render(<EmptyState title="Empty" ctaLabel="Browse Food" />);
+    renderWithProviders(<EmptyState title="Empty" ctaLabel="Browse Food" />);
     expect(screen.queryByText("Browse Food")).toBeNull();
   });
 
   it("calls onCtaPress when CTA is pressed", () => {
     const onPress = jest.fn();
-    render(
+    renderWithProviders(
       <EmptyState title="Empty" ctaLabel="Browse" onCtaPress={onPress} />,
     );
     fireEvent.press(screen.getByText("Browse"));

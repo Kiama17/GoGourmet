@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { COLORS } from "../styles/colors";
+import { useTheme } from "../context/ThemeContext";
 import { AddressesSkeleton, AdminOrdersSkeleton, CartSkeleton, FavouritesSkeleton, FoodDetailSkeleton, HomeSkeleton, OrdersSkeleton } from "./Skeleton";
 
 type LoadingSpinnerProps = {
@@ -11,10 +11,13 @@ type LoadingSpinnerProps = {
 
 export default function LoadingSpinner({
   size = "large",
-  color = COLORS.primary,
+  color: colorProp,
   fullScreen = false,
   skeleton = false,
 }: LoadingSpinnerProps) {
+  const { colors } = useTheme();
+  const color = colorProp ?? colors.primary;
+
   if (skeleton) {
     const type = typeof skeleton === "string" ? skeleton : "home";
     const SkeletonComponent = {
@@ -29,14 +32,14 @@ export default function LoadingSpinner({
 
     const content = <SkeletonComponent />;
     if (fullScreen) {
-      return <View style={styles.fullScreen}>{content}</View>;
+      return <View style={[styles.fullScreen, { backgroundColor: colors.background }]}>{content}</View>;
     }
     return content;
   }
 
   if (fullScreen) {
     return (
-      <View style={styles.fullScreen}>
+      <View style={[styles.fullScreen, { backgroundColor: colors.background }]}>
         <ActivityIndicator size={size} color={color} />
       </View>
     );
@@ -50,7 +53,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
     padding: 20,
   },
 });

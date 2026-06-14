@@ -18,6 +18,7 @@ export type SavedAddress = {
 type AddressContextType = {
   addresses: SavedAddress[];
   loading: boolean;
+  error: string | null;
   fetchAddresses: () => Promise<void>;
   saveAddress: (addr: Omit<SavedAddress, "id" | "user_id" | "created_at">) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
@@ -30,17 +31,20 @@ const AddressContext = createContext<AddressContextType | undefined>(undefined);
 export const AddressProvider = ({ children }: { children: ReactNode }) => {
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const fetchAddresses = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     const { data, error } = await supabase
       .from("addresses")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    if (!error) setAddresses((data as SavedAddress[]) || []);
+    if (error) setError("Failed to load addresses");
+    else setAddresses((data as SavedAddress[]) || []);
     setLoading(false);
   }, [user]);
 
@@ -81,7 +85,7 @@ export const AddressProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AddressContext.Provider value={{ addresses, loading, fetchAddresses, saveAddress, deleteAddress, setDefault, updateAddress }}>
+    <AddressContext.Provider value={{ addresses, loading, error, fetchAddresses, saveAddress, deleteAddress, setDefault, updateAddress }}>
       {children}
     </AddressContext.Provider>
   );

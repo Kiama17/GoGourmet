@@ -11,38 +11,46 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../styles/colors";
+import { useApp } from "../hooks/useApp";
 
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
 const { width } = Dimensions.get("window");
 
 const ONBOARDING_KEY = "onboarding_complete";
 
-const slides = [
-  {
-    icon: "restaurant",
-    title: "Browse Delicious Menu",
-    description: "Explore a wide variety of meals crafted by top chefs. From local favorites to international cuisine.",
-  },
-  {
-    icon: "cart",
-    title: "Easy Ordering",
-    description: "Add items to your cart, customize your meal, and checkout in seconds.",
-  },
-  {
-    icon: "location",
-    title: "Fast Delivery",
-    description: "Track your order in real-time and get it delivered right to your door.",
-  },
-];
+interface Slide {
+  icon: IconName;
+  title: string;
+  description: string;
+}
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { colors, t } = useApp();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
+  const slides: Slide[] = [
+    {
+      icon: "restaurant",
+      title: t("onboarding.browseTitle"),
+      description: t("onboarding.browseDesc"),
+    },
+    {
+      icon: "cart",
+      title: t("onboarding.orderTitle"),
+      description: t("onboarding.orderDesc"),
+    },
+    {
+      icon: "location",
+      title: t("onboarding.deliveryTitle"),
+      description: t("onboarding.deliveryDesc"),
+    },
+  ];
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: { index: number | null }[] }) => {
+    if (viewableItems.length > 0 && viewableItems[0].index != null) {
       setCurrentIndex(viewableItems[0].index);
     }
   }).current;
@@ -67,29 +75,29 @@ export default function OnboardingScreen() {
     router.replace("/(tabs)/home");
   };
 
-  const renderSlide = ({ item, index }: { item: typeof slides[0]; index: number }) => (
+  const renderSlide = ({ item }: { item: Slide }) => (
     <View style={styles.slide}>
-      <View style={styles.iconWrap}>
-        <Ionicons name={item.icon as any} size={80} color={COLORS.primary} />
+      <View style={[styles.iconWrap, { backgroundColor: colors.card }]}>
+        <Ionicons name={item.icon} size={80} color={colors.primary} />
       </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+      <Text style={[styles.description, { color: colors.subText }]}>{item.description}</Text>
     </View>
   );
 
   const isLast = currentIndex === slides.length - 1;
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={skip} style={styles.skipBtn}>
-        <Text style={styles.skipText}>Skip</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <TouchableOpacity onPress={skip} style={styles.skipBtn} accessibilityLabel={t("onboarding.skip")} accessibilityRole="button">
+        <Text style={[styles.skipText, { color: colors.subText }]}>{t("onboarding.skip")}</Text>
       </TouchableOpacity>
 
       <FlatList
         ref={flatListRef}
         data={slides}
         renderItem={renderSlide}
-        keyExtractor={(_, i) => String(i)}
+        keyExtractor={(item, i) => `${item.icon}-${i}`}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
@@ -119,14 +127,14 @@ export default function OnboardingScreen() {
             return (
               <Animated.View
                 key={i}
-                style={[styles.dot, { opacity, transform: [{ scale }] }]}
+                style={[styles.dot, { backgroundColor: colors.primary, opacity, transform: [{ scale }] }]}
               />
             );
           })}
         </View>
 
-        <TouchableOpacity style={styles.nextBtn} onPress={nextSlide}>
-          <Text style={styles.nextText}>{isLast ? "Get Started" : "Next"}</Text>
+        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={nextSlide} accessibilityLabel={isLast ? t("onboarding.getStarted") : t("onboarding.next")} accessibilityRole="button">
+          <Text style={styles.nextText}>{isLast ? t("onboarding.getStarted") : t("onboarding.next")}</Text>
           <Ionicons name={isLast ? "checkmark" : "arrow-forward"} size={20} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -135,31 +143,29 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
   skipBtn: { position: "absolute", top: 60, right: 24, zIndex: 10 },
-  skipText: { fontSize: 16, color: COLORS.subText, fontWeight: "600" },
+  skipText: { fontSize: 16, fontWeight: "600" },
   slide: { width, flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 40 },
   iconWrap: {
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: COLORS.card,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 40,
   },
   title: { fontSize: 26, fontWeight: "bold", textAlign: "center", marginBottom: 12 },
-  description: { fontSize: 16, color: COLORS.subText, textAlign: "center", lineHeight: 24 },
+  description: { fontSize: 16, textAlign: "center", lineHeight: 24 },
   footer: {
     paddingHorizontal: 32,
     paddingBottom: 50,
     gap: 24,
   },
   dots: { flexDirection: "row", justifyContent: "center", gap: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, backgroundColor: COLORS.primary },
+  dot: { width: 10, height: 10, borderRadius: 5 },
   nextBtn: {
     flexDirection: "row",
-    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 14,
     justifyContent: "center",

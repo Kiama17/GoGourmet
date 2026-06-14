@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { getUser, unauthorized } from "../_shared/auth.ts";
 
 const ENV = Deno.env.get("MPESA_ENV") === "production" ? "production" : "sandbox";
 const BASE_URL = ENV === "production"
@@ -40,8 +41,11 @@ async function getAccessToken(): Promise<string> {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders(req) });
   }
+
+  const user = await getUser(req);
+  if (!user) return unauthorized();
 
   try {
     const { checkoutRequestID } = await req.json();
@@ -76,12 +80,12 @@ serve(async (req) => {
         checkoutRequestID,
         responseCode: data.ResultCode,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...corsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (error) {
     return new Response(
       JSON.stringify({ success: false, message: error.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...corsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 });

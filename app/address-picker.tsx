@@ -4,10 +4,11 @@ import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { COLORS } from "../styles/colors";
+import { useApp } from "../hooks/useApp";
 
 export default function AddressPickerScreen() {
   const params = useLocalSearchParams<Record<string, string>>();
+  const { colors, t } = useApp();
   const returnTo = params.returnTo;
   const mapRef = useRef<MapView>(null);
   const [region, setRegion] = useState({
@@ -29,7 +30,6 @@ export default function AddressPickerScreen() {
         const newRegion = { ...coords, latitudeDelta: 0.05, longitudeDelta: 0.05 };
         setRegion(newRegion);
         setSelectedCoords(coords);
-        // ✅ Animate map to user's actual location
         mapRef.current?.animateToRegion(newRegion, 600);
         reverseGeocode(coords);
       }
@@ -42,20 +42,19 @@ export default function AddressPickerScreen() {
       const results = await Location.reverseGeocodeAsync(coords);
       if (results.length > 0) {
         const r = results[0];
-        // ✅ Fixed: avoid street/name duplicates, build a clean address
         const parts = [
-          r.name !== r.street ? r.name : null, // only include name if different from street
+          r.name !== r.street ? r.name : null,
           r.street,
           r.district,
           r.city,
           r.region,
         ].filter(Boolean);
-        setAddressText([...new Set(parts)].join(", ")); // deduplicate
+        setAddressText([...new Set(parts)].join(", "));
       } else {
-        setAddressText("Address not found — try moving the pin");
+        setAddressText(t("common.addressNotFound"));
       }
     } catch {
-      setAddressText("Could not fetch address. Check your connection.");
+      setAddressText(t("common.couldNotFetchAddress"));
     } finally {
       setGeocoding(false);
     }
@@ -64,7 +63,6 @@ export default function AddressPickerScreen() {
   const handleMapPress = async (e: MapPressEvent) => {
     const coords = e.nativeEvent.coordinate;
     setSelectedCoords(coords);
-    // ✅ Animate map to center on tapped location
     mapRef.current?.animateToRegion(
       { ...coords, latitudeDelta: region.latitudeDelta, longitudeDelta: region.longitudeDelta },
       300
@@ -74,7 +72,6 @@ export default function AddressPickerScreen() {
 
   const handleDragEnd = async (coords: { latitude: number; longitude: number }) => {
     setSelectedCoords(coords);
-    // ✅ Re-center map after drag
     mapRef.current?.animateToRegion(
       { ...coords, latitudeDelta: region.latitudeDelta, longitudeDelta: region.longitudeDelta },
       300
@@ -106,7 +103,6 @@ export default function AddressPickerScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={region}
-        // ✅ Removed onRegionChangeComplete — it was fighting selectedCoords
         onPress={handleMapPress}
       >
         {selectedCoords && (
@@ -120,24 +116,27 @@ export default function AddressPickerScreen() {
         )}
       </MapView>
 
-      <View style={styles.bottomCard}>
+      <View style={[styles.bottomCard, { backgroundColor: colors.card }]}>
         <View style={styles.addressRow}>
-          <Ionicons name="location" size={20} color={COLORS.primary} />
+          <Ionicons name="location" size={20} color={colors.primary} />
           {geocoding ? (
-            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginLeft: 8 }} />
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginLeft: 8 }} />
           ) : (
-            <Text style={styles.addressText} numberOfLines={2}>
-              {addressText || "Tap on the map to set your delivery location"}
+            <Text style={[styles.addressText, { color: colors.text }]} numberOfLines={2}>
+              {addressText || t("common.tapMapToSet")}
             </Text>
           )}
         </View>
 
         <TouchableOpacity
-          style={[styles.confirmButton, (!selectedCoords || geocoding) && styles.disabled]}
+          style={[styles.confirmButton, { backgroundColor: colors.primary }, (!selectedCoords || geocoding) && styles.disabled]}
           onPress={handleConfirm}
           disabled={!selectedCoords || geocoding}
+          accessibilityLabel={t("common.confirmLocation")}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !selectedCoords || geocoding }}
         >
-          <Text style={styles.confirmText}>Confirm Location</Text>
+          <Text style={styles.confirmText}>{t("common.confirmLocation")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -152,7 +151,6 @@ const styles = StyleSheet.create({
     bottom: 30,
     left: 20,
     right: 20,
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
     shadowColor: "#000",
@@ -169,11 +167,9 @@ const styles = StyleSheet.create({
   addressText: {
     flex: 1,
     fontSize: 15,
-    color: COLORS.text,
     lineHeight: 22,
   },
   confirmButton: {
-    backgroundColor: COLORS.primary,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
