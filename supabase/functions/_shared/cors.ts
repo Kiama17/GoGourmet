@@ -1,4 +1,5 @@
 const ALLOWED_ORIGINS = [
+  "https://gogourmet.co.ke",
   "https://gogourmet.vercel.app",
   "https://gogourmet-staging.vercel.app",
   "http://localhost:3000",

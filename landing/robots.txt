@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gogourmet.com/sitemap.xml
+Sitemap: https://gogourmet.co.ke/sitemap.xml

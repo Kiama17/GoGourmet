@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { supabase } from "../services/supabaseClient";
 import { useAuth } from "./AuthContext";
 import { analytics } from "../services/analytics";
 
@@ -25,77 +26,98 @@ const FAVORITES_KEY = "gogourment_favorites";
 
 const FavoritesContext = createContext<FavoritesContextType | null>(null);
 
-export const FavoritesProvider = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+export const FavoritesProvider = ({ children }: { children: React.ReactNode }) => {
   const [favorites, setFavorites] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const prevUserRef = useRef<any>(undefined);
   const { user } = useAuth();
+  const prevUserIdRef = useRef<string | undefined>(undefined);
 
   const clearError = () => setError(null);
 
-  // CLEAR FAVORITES ON LOGOUT
-  useEffect(() => {
-    if (prevUserRef.current !== undefined && !user) {
-      setFavorites([]);
-      AsyncStorage.removeItem(FAVORITES_KEY);
-    }
-    prevUserRef.current = user;
+  const fetchDbFavorites = useCallback(async (): Promise<FoodItem[]> => {
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from("favorites")
+      .select("menu_item_id, menu_items(id, name, price, image_url)")
+      .eq("user_id", user.id);
+    if (error) throw error;
+    return (data || []).map((fav: any) => ({
+      id: fav.menu_item_id,
+      name: fav.menu_items?.name || "",
+      price: fav.menu_items?.price || 0,
+      image: fav.menu_items?.image_url || "",
+    }));
   }, [user]);
 
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(FAVORITES_KEY);
-        if (stored) setFavorites(JSON.parse(stored));
-      } catch (err) {
-        setError("Failed to load favorites. Please restart the app.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadFavorites();
+  const persistLocal = useCallback((items: FoodItem[]) => {
+    AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(items)).catch(() => {});
   }, []);
 
-  // SAVE TO STORAGE ON CHANGE
+  // Load on mount & re-fetch when user changes (login/logout)
   useEffect(() => {
-    if (loading) return;
-    const saveFavorites = async () => {
+    let cancelled = false;
+
+    const load = async () => {
       try {
-        await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
-      } catch (err) {
-        setError("Failed to save favorites. Changes may not persist.");
+        setLoading(true);
+        const stored = await AsyncStorage.getItem(FAVORITES_KEY);
+        let local: FoodItem[] = stored ? JSON.parse(stored) : [];
+
+        if (user) {
+          const dbItems = await fetchDbFavorites();
+          if (!cancelled) {
+            const merged = new Map<string, FoodItem>();
+            for (const item of dbItems) merged.set(item.id, item);
+            for (const item of local) if (!merged.has(item.id)) merged.set(item.id, item);
+            local = Array.from(merged.values());
+          }
+        }
+
+        if (!cancelled) {
+          if (local.length > 0) setFavorites(local);
+          persistLocal(local);
+        }
+      } catch {
+        if (!cancelled) setError("Failed to load favorites.");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
-    saveFavorites();
+
+    load();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Persist to AsyncStorage whenever favorites change
+  useEffect(() => {
+    if (loading) return;
+    persistLocal(favorites);
   }, [favorites]);
 
-  const addFavorite = (item: FoodItem) => {
-    try {
-      setFavorites((prev) => {
-        if (prev.some((f) => f.id === item.id)) return prev;
-        return [...prev, item];
-      });
-    } catch (err) {
-      setError("Failed to add to favorites.");
+  const syncToDb = async (itemId: string, add: boolean) => {
+    if (!user) return;
+    if (add) {
+      await supabase.from("favorites").insert({ user_id: user.id, menu_item_id: itemId });
+    } else {
+      await supabase.from("favorites").delete().eq("user_id", user.id).eq("menu_item_id", itemId);
     }
+  };
+
+  const addFavorite = (item: FoodItem) => {
+    setFavorites((prev) => {
+      if (prev.some((f) => f.id === item.id)) return prev;
+      return [...prev, item];
+    });
+    syncToDb(item.id, true).catch(() => fetchDbFavorites().then((items) => { if (items) setFavorites(items); }));
   };
 
   const removeFavorite = (id: string) => {
-    try {
-      setFavorites((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      setError("Failed to remove from favorites.");
-    }
+    setFavorites((prev) => prev.filter((item) => item.id !== id));
+    syncToDb(id, false).catch(() => fetchDbFavorites().then((items) => { if (items) setFavorites(items); }));
   };
 
-  const isFavorite = (id: string) => {
-    return favorites.some((item) => item.id === id);
-  };
+  const isFavorite = (id: string) => favorites.some((item) => item.id === id);
 
   const toggleFavorite = async (item: FoodItem) => {
     try {
@@ -107,24 +129,14 @@ export const FavoritesProvider = ({
         addFavorite(item);
         analytics.track("item_favorited", { item_id: item.id });
       }
-    } catch (err) {
-      setError("Failed to update favorites. Please try again.");
-      throw err;
+    } catch {
+      setError("Failed to update favorites.");
     }
   };
 
   return (
     <FavoritesContext.Provider
-      value={{
-        favorites,
-        addFavorite,
-        removeFavorite,
-        toggleFavorite,
-        isFavorite,
-        loading,
-        error,
-        clearError,
-      }}
+      value={{ favorites, addFavorite, removeFavorite, toggleFavorite, isFavorite, loading, error, clearError }}
     >
       {children}
     </FavoritesContext.Provider>
@@ -133,8 +145,6 @@ export const FavoritesProvider = ({
 
 export const useFavorites = () => {
   const context = useContext(FavoritesContext);
-  if (!context) {
-    throw new Error("useFavorites must be used within FavoritesProvider");
-  }
+  if (!context) throw new Error("useFavorites must be used within FavoritesProvider");
   return context;
 };

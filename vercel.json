@@ -1,7 +1,9 @@
 {
+  "buildCommand": "node scripts/build-deploy.js",
   "outputDirectory": "dist",
-  "buildCommand": null,
   "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/(.*)",
@@ -13,7 +15,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/((?!_expo/static/|favicon.ico|assets/).*)", "destination": "/index.html" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/app/((?!_expo|assets|favicon\\.ico).*)", "destination": "/app/index.html" }
   ]
 }
