@@ -35,7 +35,10 @@
       "env": {
         "APP_ENV": "production",
         "MPESA_ENV": "production"
-      }
+      },
+      "plugins": [
+        "sentry-expo"
+      ]
     },
     "production-simulator": {
       "extends": "production",
