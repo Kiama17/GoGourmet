@@ -36,21 +36,24 @@ export const NotificationProvider = ({
 
   const setup = useCallback(async () => {
     if (setupDone) return;
-    const { setupNotifications, subscribeToNotifications } = await import(
-      "../services/notifications"
-    );
+    try {
+      const { setupNotifications, subscribeToNotifications } = await import(
+        "../services/notifications"
+      );
 
-    const token = await setupNotifications();
-    if (token) {
-      setExpoPushToken(token);
-      setPermissionGranted(true);
-      await supabase.rpc("upsert_push_token", { p_token: token });
+      const token = await setupNotifications();
+      if (token) {
+        setExpoPushToken(token);
+        setPermissionGranted(true);
+        await supabase.rpc("upsert_push_token", { p_token: token });
+      }
+
+      subscribeToNotifications(
+        (n: any) => setNotification(n),
+      );
+    } catch {
+      /* notifications not available on this platform */
     }
-
-    subscribeToNotifications(
-      (n: any) => setNotification(n),
-    );
-
     setSetupDone(true);
   }, [setupDone]);
 

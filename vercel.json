@@ -1,6 +1,6 @@
 {
+  "outputDirectory": "dist",
   "buildCommand": null,
-  "outputDirectory": "landing",
   "framework": null,
   "headers": [
     {
@@ -11,5 +11,9 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
       ]
     }
+  ],
+  "rewrites": [
+    { "source": "/((?!_expo/static/|favicon.ico|assets/).*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }

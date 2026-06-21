@@ -1,8 +1,12 @@
 import { init, track as amplitudeTrack } from "@amplitude/analytics-react-native";
 import Constants from "expo-constants";
 
-const expoConfig = (Constants as any).expoConfig ?? (Constants as any).manifest;
-const AMPLITUDE_API_KEY = process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY || expoConfig?.extra?.amplitudeApiKey || "";
+const expoExtra =
+  (Constants as any).expoConfig?.extra ??
+  (Constants as any).manifest?.extra ??
+  {};
+const AMPLITUDE_API_KEY =
+  process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY || expoExtra.amplitudeApiKey || "";
 
 if (AMPLITUDE_API_KEY) {
   init(AMPLITUDE_API_KEY, undefined, {

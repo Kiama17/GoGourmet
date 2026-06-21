@@ -1,8 +1,12 @@
 import Constants from "expo-constants";
 import { MenuItem } from "./menu";
 
-const expoConfig = (Constants as any).expoConfig ?? (Constants as any).manifest;
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || expoConfig?.extra?.nvidiaApiKey || "";
+const expoExtra =
+  (Constants as any).expoConfig?.extra ??
+  (Constants as any).manifest?.extra ??
+  {};
+const NVIDIA_API_KEY =
+  process.env.NVIDIA_API_KEY || expoExtra.nvidiaApiKey || "";
 const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 
 function buildHeaders(): Record<string, string> {

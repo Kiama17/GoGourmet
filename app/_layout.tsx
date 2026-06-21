@@ -1,13 +1,13 @@
 import Constants from "expo-constants";
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import * as Sentry from "sentry-expo";
+import { useEffect } from "react";
 
-Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || (Constants.expoConfig?.extra?.sentryDsn as string) || "",
-  tracesSampleRate: 0.2,
-  enableInExpoDevelopment: true,
-});
+const sentryDsn =
+  process.env.EXPO_PUBLIC_SENTRY_DSN ||
+  ((Constants as any).expoConfig?.extra?.sentryDsn as string) ||
+  ((Constants as any).manifest?.extra?.sentryDsn as string) ||
+  "";
 import { AddressProvider } from "../context/AddressContext";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
@@ -22,6 +22,22 @@ import ErrorBoundary from "../components/ErrorBoundary";
 import OfflineBanner from "../components/OfflineBanner";
 
 export default function RootLayout() {
+  useEffect(() => {
+    if (sentryDsn) {
+      import("sentry-expo")
+        .then((Sentry) => {
+          Sentry.init({
+            dsn: sentryDsn,
+            tracesSampleRate: 0.2,
+            enableInExpoDevelopment: true,
+          });
+        })
+        .catch(() => {
+          /* sentry-expo not available on this platform */
+        });
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider>
