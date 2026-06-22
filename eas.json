@@ -35,16 +35,21 @@
       "env": {
         "APP_ENV": "production",
         "MPESA_ENV": "production"
-      },
-      "plugins": [
-        "sentry-expo"
-      ]
+      }
     },
     "production-simulator": {
       "extends": "production",
       "ios": {
         "simulator": true
       }
+    },
+    "preview-apk": {
+      "extends": "production",
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "channel": "preview"
     }
   },
   "submit": {
@@ -54,9 +59,9 @@
         "track": "production"
       },
       "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "appleId": "placeholder@example.com",
+        "ascAppId": "000000000",
+        "appleTeamId": "XXXXXXXXXX"
       }
     }
   }

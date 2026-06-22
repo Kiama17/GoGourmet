@@ -1,10 +1,11 @@
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import React from "react";
 import { ThemeProvider } from "../../context/ThemeContext";
+import { LanguageProvider } from "../../context/LanguageContext";
 import PaymentMethodSelector from "../PaymentMethodSelector";
 
 function renderWithProviders(ui: React.ReactElement) {
-  return render(<ThemeProvider>{ui}</ThemeProvider>);
+  return render(<LanguageProvider><ThemeProvider>{ui}</ThemeProvider></LanguageProvider>);
 }
 
 describe("PaymentMethodSelector", () => {

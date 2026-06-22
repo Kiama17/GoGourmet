@@ -187,6 +187,7 @@ const mock = {
     vibrate: jest.fn(),
     cancel: jest.fn(),
   },
+  useColorScheme: () => "light",
   Appearance: {
     getColorScheme: () => "light",
     addChangeListener: () => ({ remove: () => {} }),
