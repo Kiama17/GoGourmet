@@ -82,7 +82,15 @@ export default {
     scheme: "gogourmet",
     plugins: [
       "expo-router",
-      "expo-build-properties",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableProguardInReleaseBuilds: true,
+            extraProguardRules: "-keep class expo.modules.** { *; }",
+          },
+        },
+      ],
       "expo-web-browser",
       [
         "expo-location",
