@@ -1,11 +1,14 @@
-global.IS_REACT_ACT_ENVIRONMENT = true;
-global.__DEV__ = true;
-global.requestAnimationFrame = (callback) => setTimeout(callback, 0);
-global.cancelAnimationFrame = (id) => clearTimeout(id);
-global.performance = { now: jest.fn(Date.now) };
-global.nativeFabricUIManager = {};
-global.regeneratorRuntime = undefined;
-global.window = global;
+export {};
+
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as any).__DEV__ = true;
+(globalThis as any).requestAnimationFrame = (callback: any) => setTimeout(callback, 0);
+(globalThis as any).cancelAnimationFrame = (id: any) => clearTimeout(id);
+(globalThis as any).performance = { now: jest.fn(Date.now) };
+(globalThis as any).nativeFabricUIManager = {};
+(globalThis as any).regeneratorRuntime = undefined;
+(globalThis as any).window = globalThis;
+(globalThis as any).Window = globalThis;
 
 class MockEventEmitter {}
 Object.assign(globalThis, {

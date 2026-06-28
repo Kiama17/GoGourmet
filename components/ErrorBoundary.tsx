@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { captureException } from "@sentry/react-native";
+import { Native } from "sentry-expo";
 import { ThemeContext } from "../context/ThemeContext";
 
 type ErrorBoundaryProps = {
@@ -27,7 +27,7 @@ export default class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    Native.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
   }
 
   handleReset = () => {

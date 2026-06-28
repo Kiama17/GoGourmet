@@ -1,34 +1,27 @@
 {
-  "$schema": "https://raw.githubusercontent.com/expo/expo/sdk-52/packages/@expo/config/schema/expo-config-schema.json",
   "expo": {
     "name": "GoGourmet",
     "slug": "gogourmet",
-    "version": "1.0.0",
+    "version": "1.0.0-beta",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gogourmet.app",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.gogourmet.app"
     },
     "android": {
       "package": "com.gogourmet.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/splash.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ]
@@ -41,6 +34,7 @@
     "plugins": [
       "expo-router",
       "expo-build-properties",
+      "expo-font",
       "expo-web-browser",
       [
         "expo-location",
@@ -48,18 +42,7 @@
           "locationAlwaysAndWhenInUsePermission": "Allow GoGourmet to use your location to set delivery address.",
           "locationWhenInUsePermission": "Allow GoGourmet to use your location to set delivery address."
         }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/logo.png",
-          "color": "#ff6b00"
-        }
-      ],
-      "expo-font",
-      "expo-image",
-      "expo-status-bar",
-      "sentry-expo"
+      ]
     ],
     "runtimeVersion": {
       "policy": "appVersion"
