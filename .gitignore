@@ -15,3 +15,6 @@ expo-env.d.ts
 /android/
 /ios/
 .vercel
+
+# APK builds
+*.apk

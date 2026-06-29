@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import MapView, { MapPressEvent, Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { MapPressEvent, Marker } from "react-native-maps";
 import { useApp } from "../hooks/useApp";
 
 export default function AddressPickerScreen() {
@@ -101,7 +101,7 @@ export default function AddressPickerScreen() {
       <MapView
         ref={mapRef}
         style={styles.map}
-        provider={PROVIDER_GOOGLE}
+
         region={region}
         onPress={handleMapPress}
       >
