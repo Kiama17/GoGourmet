@@ -117,7 +117,7 @@ export default {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || "",
       nvidiaApiKey: process.env.NVIDIA_API_KEY || "",
       supabaseUrl: process.env.SUPABASE_URL || "https://fvkqqhrwnhwstbyophnc.supabase.co",
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2a3FxaHJ3bmh3c3RieW9waG5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTA5NzUsImV4cCI6MjA5NTA2Njk3NX0.wv5YZM9MNvwBg6W87c2g9JQseNIg5fYJaJIORXQcBX8",
       amplitudeApiKey: process.env.EXPO_PUBLIC_AMPLITUDE_API_KEY || "",
       sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "",
       appEnv: APP_ENV,

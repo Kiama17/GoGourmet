@@ -11,10 +11,18 @@ const supabaseUrl =
 const supabaseAnonKey =
   process.env.SUPABASE_ANON_KEY || expoExtra.supabaseAnonKey || "";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false,
-  },
-});
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    "[supabase] Missing credentials — SUPABASE_URL and SUPABASE_ANON_KEY must be set via .env or app config extra"
+  );
+}
+
+export const supabase = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+      },
+    })
+  : (null as any);
