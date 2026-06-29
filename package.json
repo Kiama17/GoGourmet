@@ -27,6 +27,7 @@
     "dotenv": "^17.4.2",
     "eslint-config-expo": "~56.0.4",
     "expo": "^56.0.12",
+    "expo-application": "~56.0.3",
     "expo-build-properties": "~56.0.16",
     "expo-constants": "^56.0.15",
     "expo-device": "~56.0.4",
@@ -67,6 +68,9 @@
     "jest-expo": "^56.0.5",
     "react-test-renderer": "^19.1.0",
     "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "@react-native-async-storage/async-storage": "2.2.0"
   },
   "private": true
 }
