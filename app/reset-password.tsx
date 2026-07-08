@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import LoadingSpinner from "../components/LoadingSpinner";
+import type { AuthChangeEvent, AuthError } from "@supabase/supabase-js";
 import { supabase } from "../services/supabaseClient";
 import { useToast } from "../context/ToastContext";
 import { useApp } from "../hooks/useApp";
@@ -34,13 +35,13 @@ export default function ResetPasswordScreen() {
         supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || "",
-        }).then(({ error }) => {
+        }).then(({ error }: { error: AuthError | null }) => {
           if (!error) setSessionReady(true);
           else showToast("Invalid or expired reset link. Please request a new one.", "error");
         });
       }
     } else {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
         if (event === "PASSWORD_RECOVERY") {
           setSessionReady(true);
         }

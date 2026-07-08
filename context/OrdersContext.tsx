@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import { supabase } from "../services/supabaseClient";
 import { useAuth } from "./AuthContext";
 import { useCart } from "./CartContext";
@@ -54,7 +55,7 @@ export const OrdersProvider = ({ children }: { children: ReactNode }) => {
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${user.id}` },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Record<string, any>>) => {
           const updated = payload.new as any;
           setOrders((prev) =>
             prev.map((o) => (o.id === updated.id ? { ...o, status: updated.status } : o))
