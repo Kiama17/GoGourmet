@@ -65,15 +65,11 @@ export default {
         foregroundImage: env.icon,
         backgroundColor: "#ffffff",
       },
-      ...(process.env.GOOGLE_MAPS_API_KEY
-        ? {
-            config: {
-              googleMaps: {
-                apiKey: process.env.GOOGLE_MAPS_API_KEY,
-              },
-            },
-          }
-        : {}),
+      config: {
+        googleMaps: {
+          apiKey: process.env.GOOGLE_MAPS_API_KEY || "",
+        },
+      },
       permissions: [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
