@@ -86,7 +86,7 @@ export default {
         "expo-build-properties",
         {
           android: {
-            enableProguardInReleaseBuilds: true,
+            enableProguardInReleaseBuilds: false,
             extraProguardRules: "-keep class expo.modules.** { *; }",
           },
         },
